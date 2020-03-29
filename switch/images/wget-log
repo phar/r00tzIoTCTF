@@ -1,0 +1,11 @@
+--2020-03-18 19:23:58--  https://images.squarespace-cdn.com/content/56219687e4b0501d40639db8/1445224246239-RUQH4PCY5IIEU8ILREU5/r00tz+logo.png?format=100w
+Resolving images.squarespace-cdn.com (images.squarespace-cdn.com)... 151.101.0.238, 151.101.64.238, 151.101.128.238, ...
+Connecting to images.squarespace-cdn.com (images.squarespace-cdn.com)|151.101.0.238|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 28152 (27K)
+Saving to: ‘r00tz+logo.png?format=100w’
+
+r00tz+logo.png?format=100w                                0%[                                                                                                                               ]       0  --.-KB/s               r00tz+logo.png?format=100w                              100%[==============================================================================================================================>]  27.49K  --.-KB/s    in 0.005s  
+
+2020-03-18 19:23:58 (4.96 MB/s) - ‘r00tz+logo.png?format=100w’ saved [28152/28152]
+

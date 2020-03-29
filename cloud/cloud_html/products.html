@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+
+</style>
+</head>
+<body>
+
+{% autoescape false %}
+<style>
+{{ menustyle }}
+</style>
+{{ menuscript }}
+{% endautoescape %}
+<script>
+	document.getElementById('menuproducts').className="active";
+</script>
+
+
+
+
+</body>
+</html>
+

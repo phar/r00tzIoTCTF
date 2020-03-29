@@ -1,0 +1,9 @@
+<div class="topnav">
+  <a class="active" href="/">Home</a>
+  <a class="active" href="/products.html">Products</a>
+  <a href="/news.html">News</a>
+  <a href="/contact.html">Contact</a>
+  <a href="/login">Customer Login</a>
+  <a href="#about">About</a>
+</div>
+

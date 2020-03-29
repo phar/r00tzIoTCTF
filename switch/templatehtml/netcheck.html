@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+{% autoescape false %}
+{{ menustyle }}
+</style>
+</head>
+<body >
+	<center><h2>{{ productname }}</h2></center>
+ {{ menuscript }}
+{% endautoescape %}
+<script>
+function loadLog() {
+  document.getElementById('logview').innerHTML = "Please wait...";
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+	if (this.readyState == 4 && this.status == 200) {
+		var logdata = JSON.parse(this.responseText);
+		document.getElementById('logview').innerHTML = logdata['state'];
+		document.getElementById('logview').scrollTop = document.getElementById('logview').scrollHeight;
+	}
+  };
+  xhttp.open("POST", "/api/netcheck", true);
+  xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+  xhttp.send(JSON.stringify({"count":"5"}));
+}
+</script>
+<center>
+<table>
+	<tr><td><pre id="logview" rows="25" cols="80"></pre></td</tr>
+	<tr><td><input type="button" value="Do Check" onclick=loadLog()></td></tr>
+</table>
+</center>
+</body>
+</style>
+</head>

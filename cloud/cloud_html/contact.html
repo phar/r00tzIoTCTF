@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<body onload="foo();">
+{% autoescape false %}
+<style>
+{{ menustyle }}
+</style>
+{{ menuscript }}
+{% endautoescape %}
+<script>
+function foo(){
+	document.getElementById('menucontact').className="active";
+}
+</script>
+<br>
+<br>
+<br>
+<br>
+<center>
+<form>
+<table>
+<tr><td colspan=2>Thank you for contacting us about our fantastic products, we will try to get back to you as soon as possible.</td><tr>
+<tr><td colspan=2></td></tr>
+	<tr><td>Subject</td><td>
+
+	<select id="about">
+	  <option value="sales">Sales</option>
+	  <option value="security">Security</option>
+	  <option value="bad_html_design">Bad HTML Design</option>
+	  <option value="just_for_fun">Just for fun</option>
+	</select>
+
+</td></tr>
+<tr><td>Email</td><td><input type="text" name="email"></td></tr>
+<tr><td valign="top">Message</td><td><textarea spellcheck="false" id="logview" rows="25" cols="80" name="message"></textarea></td></tr>
+<tr><td></td><td align="right"><input type="button" value="Submit"></td></tr>
+</table>
+</form>
+</center>
+</body>
+</html>
+
