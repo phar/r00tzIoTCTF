@@ -1,61 +1,63 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-{% autoescape false %}
-{{ menustyle }}
-</style>
-</head>
-<body onload=loadState()>
-	<center><h2>{{ productname }}</h2></center>
- {{ menuscript }}
-{% endautoescape %}
-
-<center>
-<table>
-	<tr><td>Current Status:</td><td id="switchText">ON</td><td><a id="switchLink"><img id="switchImg" src="../images/switch-on.png"></a></td></tr>
-</table>
-</center>
-<script>
-	
-function switchOff() {
-	var xhttp = new XMLHttpRequest();
-	xhttp.open("POST", "/api/lights");
-	xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-	xhttp.send(JSON.stringify({"state":"OFF"}));
-	
-}
-
-function switchOn() {
-	var xhttp = new XMLHttpRequest();
-	xhttp.open("POST", "/api/lights");
-	xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-	xhttp.send(JSON.stringify({"state":"ON"}));
-}
-
-function loadState() {
-  var xhttp = new XMLHttpRequest();
-  xhttp.onreadystatechange = function() {
-	if (this.readyState == 4 && this.status == 200) {
-		var state = JSON.parse(this.responseText);
-		if(state['state'] == "ON"){
-			document.getElementById('switchImg').src='../images/switch-on.png';
-			document.getElementById('switchText').innerHTML = "ON";
-			document.getElementById('switchLink').onclick = switchOff;
-		}else{
-			document.getElementById('switchImg').src='../images/switch-off.png';
-			document.getElementById('switchText').innerHTML = "OFF";
-			document.getElementById('switchLink').onclick = switchOn;
-		}
-	}
-  };
-  xhttp.open("GET", "/api/lights", true);
-  xhttp.send();
-  setTimeout(loadState, 2000);
-}
-</script>
-   
-</body>
+   <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <style>
+         {% autoescape false %}
+         {{ menustyle }}
+      </style>
+   </head>
+   <body onload=loadState()>
+      <center>
+         <h2>{{ productname }}</h2>
+      </center>
+      {{ menuscript }}
+      {% endautoescape %}
+      <center>
+         <table>
+            <tr>
+               <td>Current Status:</td>
+               <td id="switchText">ON</td>
+               <td><a id="switchLink"><img id="switchImg" src="../images/switch-on.png"></a></td>
+            </tr>
+         </table>
+      </center>
+      <script>
+         function switchOff() {
+         	var xhttp = new XMLHttpRequest();
+         	xhttp.open("POST", "/api/lights");
+         	xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+         	xhttp.send(JSON.stringify({"state":"OFF"}));
+         	
+         }
+         
+         function switchOn() {
+         	var xhttp = new XMLHttpRequest();
+         	xhttp.open("POST", "/api/lights");
+         	xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+         	xhttp.send(JSON.stringify({"state":"ON"}));
+         }
+         
+         function loadState() {
+           var xhttp = new XMLHttpRequest();
+           xhttp.onreadystatechange = function() {
+         	if (this.readyState == 4 && this.status == 200) {
+         		var state = JSON.parse(this.responseText);
+         		if(state['state'] == "ON"){
+         			document.getElementById('switchImg').src='../images/switch-on.png';
+         			document.getElementById('switchText').innerHTML = "ON";
+         			document.getElementById('switchLink').onclick = switchOff;
+         		}else{
+         			document.getElementById('switchImg').src='../images/switch-off.png';
+         			document.getElementById('switchText').innerHTML = "OFF";
+         			document.getElementById('switchLink').onclick = switchOn;
+         		}
+         	}
+           };
+           xhttp.open("GET", "/api/lights", true);
+           xhttp.send();
+           setTimeout(loadState, 2000);
+         }
+      </script>
+   </body>
 </html>
-

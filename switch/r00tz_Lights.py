@@ -7,12 +7,12 @@ import os
 import os.path as path
 from pathlib import Path
 import time
-
-
+import uuid
+from update_switch_status import *
 app = Flask(__name__)
 
 def force_login_if_needed():
-#	if(existsFile("r00tzRegistered")):
+	if(existsFile("r00tzRegistered")):
 		if 'loggedin' not in session:
 			session['loggedin'] = False
 		else:
@@ -20,21 +20,32 @@ def force_login_if_needed():
 				return False
 			else:
 				return redirect(url_for('dologinhtml'))
-#	else:
-#		redirect(url_for('doregisterhtml'))
-#	return False
+	else:
+		return redirect(url_for('doregisterhtml'))
+	return False
 
 
 PRODUCTNAME  = "r00tz Lighting Switch Interface v1.0"
 
-
+#@app.route('/<path:path>')
+#def send_js(path):
+#	if path.endswith("html"): #vuln
+#		with open('templatehtml/%s' % path) as f:
+#		   tpl = f.read()
+#		return render_template_string(tpl)
+#	else:
+#		return send_from_directory('templatehtml', path)
+#
+		
 @app.context_processor
 def context_proc():
 	fsty = open("templatehtml/menustyle.txt")
 	fscr = open("templatehtml/menuscript.txt")
-	customstuff = {"menustyle":fsty.read(), "menuscript":fscr.read(), "productname":PRODUCTNAME}
+	swid = getFile("r00tzSwitchID")
+	customstuff = {"switchid":swid,"menustyle":fsty.read(), "menuscript":fscr.read(), "productname":PRODUCTNAME}
 	fscr.close()
 	fsty.close()
+	
 	return {**session , **customstuff}
 	
 def logevent(eventstring):
@@ -99,6 +110,33 @@ def doping():
 	return json.dumps({"status":status})
 
 
+#@app.route("/api/register",methods=['POST','GET'])
+#def doregister():
+#	status="failure"
+#	if request.method == 'POST':
+#		if request.is_json:
+#			content = request.get_json()
+#	return json.dumps({"status":status})
+
+
+#@app.route("/restore",methods=['POST','GET'])
+#def dorestore():
+#	status="failure"
+#	if request.method == 'POST':
+#		if 'file' not in request.files:
+#		   return redirect(request.url)
+#		file = request.files['file']
+#		if file.filename == '':
+#			flash('No selected file')
+#			return redirect(request.url)
+#		if file and allowed_file(file.filename):
+#			filename = secure_filename(file.filename)
+##		   file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+#			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+#			return redirect(url_for('uploaded_file', filename=filename))
+#	 return redirect(request.url)
+
+
 @app.route("/api/lights",methods=['POST','GET'])
 def dolights():
 	#no login here
@@ -106,12 +144,15 @@ def dolights():
 	if request.method == 'POST':
 		if request.is_json:
 			content = request.get_json()
+			home = getFile("r00tzSwitchID")
 			if content['state'] == "ON":
 				touchFile("r00tzSwitchOn")
 				logevent("turn light switch on!")
 			elif content['state'] == "OFF":
 				cleanFile("r00tzSwitchOn")
 				logevent("turn light switch off!")
+			apiSetStatus(home["home_id"],home["switch_id"],content['state'])
+	
 	else:
 		status="success"
 	if(existsFile("r00tzSwitchOn")):
@@ -120,15 +161,20 @@ def dolights():
 		state = "OFF"
 	return json.dumps({"status":status,"state":state})
  
-def touchFile(file):
-	Path(os.path.join("/tmp", file)).touch()
+def touchFile(file, contents=None):
+	f = open(os.path.join("configs", file),"w")
+	return json.dump(contents,f)
 	
+def getFile(file):
+	f = open(os.path.join("configs", file))
+	return json.load(f)
+
 def cleanFile(file):
 	if existsFile(file):
-		os.remove(os.path.join("/tmp", file))
+		os.remove(os.path.join("configs", file))
 
 def existsFile(file):
-	return path.isfile(os.path.join("/tmp", file))
+	return path.isfile(os.path.join("configs", file))
  
 # which URL should call the associated function.
 @app.route("/")
@@ -136,7 +182,6 @@ def dohome():
 	li = force_login_if_needed()
 	if li is not False:
 		return li
-
 	with open('templatehtml/main.html') as f:
 		tpl = f.read()
 	return render_template_string(tpl)
@@ -156,6 +201,7 @@ def dologinhtml():
 	   tpl = f.read()
 	return render_template_string(tpl)
 
+
 @app.route("/viewlog")
 def dologhtml():
 	li = force_login_if_needed()
@@ -164,7 +210,7 @@ def dologhtml():
 	with open('templatehtml/logview.html') as f:
 	   tpl = f.read()
 	return render_template_string(tpl)
-	
+
 @app.route("/netcheck")
 def donetcheckhtml():
 	li = force_login_if_needed()
@@ -185,12 +231,13 @@ def dologout():
 if __name__ == "__main__":
 	app.config['DEBUG'] = True
 	app.secret_key = "any random string" #;)
+	
 	Path("logs/switchlog.txt").touch()
+	if(not existsFile("r00tzSwitchID")):
+		touchFile("r00tzSwitchID",str(uuid.uuid4()))
+		logevent("created new switch uuid")
+
 	app.run()
 
-    
-#TODO: store light switch state
-#TODO: store initalization state
-#TODO: new  switch registration
-#TODO: restore factory defaults
-#TODO: more logging
+
+

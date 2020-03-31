@@ -21,7 +21,9 @@ PRODUCTNAME  = "r00tz Cloud Interface v1.0"
 
 @app.route("/")
 def dohome():
-	return send_from_directory('cloud_html', "index.html")
+	with open('cloud_html/index.html') as f:
+	   tpl = f.read()
+	return render_template_string(tpl)
 
 @app.route('/<path:path>')
 def send_js(path):
@@ -64,9 +66,14 @@ def dogetstatus():
 		c = conn.cursor()
 		content = request.get_json()
 		try:
-			c.execute("select status from switch_status where house_id=? and switch_id=?",(content["house_id"],content["switch_id"]))
-			status = {"result":"success", "status":c.fetchone()[0]}
-			logevent(content["house_id"], "house_id %s has requested status on switch %s" % (content["house_id"], content["switch_id"]))
+			if "switch_id" in content:
+				c.execute("select status from switch_status where house_id=? and switch_id=?",(content["house_id"],content["switch_id"]))
+				status = {"result":"success", "status":c.fetchone()[0]}
+				logevent(content["house_id"], "house_id %s has requested status on switch %s" % (content["house_id"], content["switch_id"]))
+			else:
+				c.execute("select switch_id,status from switch_status where house_id=?",(content["house_id"],))				
+				status = {"result":"success", "status":c.fetchall()}
+				logevent(content["house_id"], "house_id %s has requested status" % (content["house_id"]))
 		except:
 			status["error"] = "the resource could not be located"
 			logevent(None, "error from ip address XXXX making getStatus api query")
@@ -76,7 +83,11 @@ def dogetstatus():
 	
 	return json.dumps(status)
 	
-	
+@app.route("/images/<filename>")
+def dogetimages(filename):
+	return send_from_directory(directory='./images/', filename=filename)
+
+
 @app.route("/api/register", methods=['POST'])
 def doregister():
 	status = {"result":"fail"}
@@ -85,7 +96,7 @@ def doregister():
 		c = conn.cursor()
 		content = request.get_json()
 		try:
-			c.execute("insert into homes (house_id, password, first, last, address, city, state, phone) values (?,?,?,?,?,?,?,?)" , (content["house_id"], content["password"], content["first"], content["last"], content["address"],content["city"],content["state"],content["phone"]))
+			c.execute("insert into homes (house_id,username, password, first, last, address, city, state, phone) values (?,?,?,?,?,?,?,?,?)" , (content["house_id"],content["username"], content["password"], content["first"], content["last"], content["address"],content["city"],content["state"],content["phone"]))
 			conn.commit()
 			status = {"result":"success"}
 			logevent(content["house_id"], "house_id %s is now registered" % (content["house_id"]))
@@ -110,10 +121,11 @@ def dosetstatus():
 		content = request.get_json()
 		#i should make this a sql ijection
 		try:
+			print(content)
 			c.execute("insert or replace into switch_status (switch_id,house_id,status) values (?,?,?)" , (content["switch_id"], content["house_id"], content["status"]))
 			status = {"result":"success", "status":content["status"]}
 			conn.commit()
-			logevent(content["house_id"], "house_id %s has set status %d on switch %s" % (content["house_id"], content["status"], content["switch_id"]))
+			logevent(content["house_id"], "house_id %s has set status %s on switch %s" % (content["house_id"], content["status"], content["switch_id"]))
 		except:
 			conn.rollback()
 			status["error"] = "the resource could not be located"
@@ -137,23 +149,38 @@ def doadminloginhtml():
 	   tpl = f.read()
 	return render_template_string(tpl)
 	
+@app.route("/main")
+def domain():
+	with open('templatehtml/main.html') as f:
+	   tpl = f.read()
+	return render_template_string(tpl)
+	
+	
+@app.route("/logout")
+def dologout():
+	if session['loggedin'] == True:
+		session.clear()
+		logevent(None,"user logout event")
+	return redirect(url_for('dohome'))
+
+
 @app.route("/api/login",methods=['POST','GET'])
 def dologin():
-#	with open('userdb.json') as f:
-#		userdata = json.load(f)
-
 	conn = getdbconn()
 	c = conn.cursor()
-	content = request.get_json()
 	try:
-		c.execute("select password from homes where house_id=?", content['house_id'])
-
-		if  request.form['user'] in userdata:
-			if  request.form['pass'] == c.fetchone()[0]:
-				session['loggedin'] = True
+		print(request.form['user'])
+		c.execute("select password,house_id from homes where username=(?);", (request.form['user'],))
+		row = c.fetchone()
+		if  request.form['pass'] == row[0]:
+			session['loggedin'] = True
+			session['house_id'] = row[1]
+			logevent(row[1], "user %s logged in")
+		else:
+			logevent(row[1], "user %s  failed to logged in" % request.form['user'])
 	except:
-		pass
-	return redirect(url_for('dohome'))
+		logevent(None, "database error during login attempt")
+	return redirect(url_for('domain'))
 
 	
 def logevent(house_id, eventstring):
@@ -165,10 +192,10 @@ def logevent(house_id, eventstring):
 
 def buildDB(conn):
 	conn.execute("create table if not exists logs(event_id INTEGER PRIMARY KEY AUTOINCREMENT, ts  integer, house_id text, logmsg  text);")
-	conn.execute("create table IF NOT EXISTS homes(house_id text, password text, first text,last text,address text,city text,state text,phone text,  UNIQUE(house_id));")
+	conn.execute("create table IF NOT EXISTS homes(house_id text,username text, password text, first text,last text,address text,city text,state text,phone text,  UNIQUE(house_id));")
 	conn.execute("create table IF NOT EXISTS switch_status(switch_id text,house_id text, status integer, UNIQUE(switch_id,house_id), FOREIGN KEY(house_id) REFERENCES homes(house_id));")
 	conn.commit()
-	conn.execute("insert into homes(house_id,password,first,last,address,city,state,phone) values (Null, Null, 'internal', 'only', Null,Null,Null,Null)")
+	conn.execute("insert into homes(house_id,username,password,first,last,address,city,state,phone) values (Null,'admin', 'password', 'internal', 'only', Null,Null,Null,Null)")
 	conn.commit()
 
 

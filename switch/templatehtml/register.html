@@ -1,0 +1,89 @@
+<html>
+   <head></head>
+   <script>
+      function uuidv4() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+      }
+      
+      function setuuid(){
+      	document.getElementById('hsed1').value = uuidv4();
+      }
+      
+   </script>
+   <body onload="setuuid()">
+      Hi! it looks like your switch has not yet been configured, we'll help you get started by entering your information below:
+      <br>
+      <br>
+      <br>
+      <br>
+      <center>
+         <table>
+            <form>
+               <tr>
+                  <td colspan=2>Register your new switch with an existing account</td>
+               </tr>
+               <tr>
+                  <td>Switch ID:</td>
+                  <td><input type="text" name="switch_id" value="{{ switchid }}"></td>
+               </tr>
+               <tr>
+                  <td>Username:</td>
+                  <td><input type="text" name="user"></td>
+               </tr>
+               <tr>
+                  <td>Password:</td>
+                  <td><input type="text" name="pass"></td>
+               </tr>
+               <tr>
+                  <td colspan=2 align="right"><input type="button" value="Register This Switch"></td>
+               </tr>
+            </form>
+            <form>
+               <tr>
+                  <td colspan=2><br></td>
+               </tr>
+               <tr>
+                  <td colspan=2>Or Register as a first time user:</td>
+               </tr>
+               <tr>
+                  <td>House ID:</td>
+                  <td><input type="text" id="hsed1" name="switch_id" ></td>
+               </tr>
+               <tr>
+                  <td>Switch ID:</td>
+                  <td><input type="text" name="switch_id" value="{{ switchid }}"></td>
+               </tr>
+               <tr>
+                  <td>Username:</td>
+                  <td><input type="text" name="user"></td>
+               </tr>
+               <tr>
+                  <td>Password:</td>
+                  <td><input type="text" name="pass"></td>
+               </tr>
+               <tr>
+                  <td>Phone:</td>
+                  <td><input type="text" name="pass"></td>
+               </tr>
+               <tr>
+                  <td>Address:</td>
+                  <td><input type="text" name="pass"></td>
+               </tr>
+               <tr>
+                  <td>City:</td>
+                  <td><input type="text" name="pass"></td>
+               </tr>
+               <tr>
+                  <td>State:</td>
+                  <td><input type="text" name="pass"></td>
+               </tr>
+               <tr>
+                  <td colspan=2 align="right"><input type="button" value="Register Switch&User"></td>
+               </tr>
+            </form>
+         </table>
+      </center>
+   </body>

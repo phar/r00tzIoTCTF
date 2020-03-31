@@ -1,5 +1,9 @@
 import requests
-API_HOST_URL = "http://localhost:5000"
+import uuid
+import argparse
+
+
+API_HOST_URL = "http://localhost:5001"
 
 
 #import RPi.GPIO as GPIO # Importing the GPIO library to control GPIO pins of Raspberry Pi
@@ -48,20 +52,49 @@ def apiGetStatus(house_id, switch_id):
 	return api_request("getStatus", {"house_id":house_id,"switch_id":switch_id})
 
 
-def apiRegisterHouse(house_id, password, first, last, address, city, state, phone):
-	return api_request("register", {"house_id":house_id,"password":password,"first":first,"last":last,"address":address,"city":city,"state":state,"phone":phone})
+def apiRegisterHouse(house_id,username, password, first, last, address, city, state, phone):
+	return api_request("register", {"house_id":house_id,"username":username,"password":password,"first":first,"last":last,"address":address,"city":city,"state":state,"phone":phone})
 
  
 # Run the app on the local development server
 if __name__ == "__main__":
-	home_id = "SdfsdfsD"
-	print(apiRegisterHouse(home_id, "password","firsty","lasty","mocking bird lane","seattle","wa","23423423"))
-	print(apiSetStatus(home_id,"bathroom lights",1))
-	print(apiGetStatus(home_id,"bathroom lights"))
-	print(apiSetStatus(home_id,"bathroom lights",0))
-	print(apiGetStatus(home_id,"bathroom lights"))
-	print(apiSetStatus(home_id,"bathroom lights",128))
-	print(apiGetStatus(home_id,"bathroom lights"))
-	print(apiSetStatus(home_id,"bathroom lights",0))
-	print(apiGetStatus(home_id,"bathroom lights"))
+	parser = argparse.ArgumentParser(description='r00ts IoT API  Tool and Lib')
 
+	parser.add_argument('--username', action="store", )
+	parser.add_argument('--password', action="store", )
+	parser.add_argument('--home_id', action="store")
+	parser.add_argument('--switch_id', action="store" )
+	parser.add_argument('--set', action="store_true", )
+	parser.add_argument('--get', action="store_true", )
+	parser.add_argument('--register', action="store_true", )
+
+	results = parser.parse_known_args()[0]
+	print(results)
+	if results.set:
+		parser.add_argument('--state', action="store", type=int)
+		sgresults = parser.parse_args()
+		print(sgresults)
+		if sgresults.state > 0:
+			state = "ON"
+		else:
+			state = "OFF"
+		print(apiSetStatus(sgresults.home_id,sgresults.switch_id,state))
+	
+	elif results.get:
+		parser = parser.parse_args()
+		print(apiGetStatus(parser.home_id,parser.switch_id))
+
+	elif results.register:
+		parser.add_argument('--first', action="store", )
+		parser.add_argument('--last', action="store", )
+		parser.add_argument('--address', action="store", )
+		parser.add_argument('--city', action="store", )
+		parser.add_argument('--state', action="store", )
+		parser.add_argument('--phone', action="store", )
+		sgresults = parser.parse_args()
+		print(apiRegisterHouse(sgresults.home_id,sgresults.switch_id,sgresults.password,sgresults.first,sgresults.last,sgresults.address,sgresults.city,sgresults.state,sgresults.phone))
+	
+# python update_switch_status.py --home_id "Sdf34sdfsD"  --switch_id "bathroom lights" --register --username "foobar"  --password "password" --first "firsty" --last "lasty" --address "address" --city "city" --state="WA" --phone "92873492"
+#update_switch_status.py  --username "foobar"  --password "password" --home_id "SdfsdfsD"  --switch_id "bathroom lights" --get
+#update_switch_status.py --username "foobar"  --password "password"  --home_id "SdfsdfsD"  --switch_id "bathroom lights" --set --state 0
+#update_switch_status.py  --username "foobar"  --password "password" --home_id "SdfsdfsD"  --switch_id "bathroom lights" --set --state 1
