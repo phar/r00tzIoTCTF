@@ -1,0 +1,26 @@
+1585543356.787812	turn light switch on!
+1585592876.870413	created new switch uuid
+1585670880.564919	turn light switch off!
+1585670913.456083	turn light switch on!
+1585670967.0978408	turn light switch off!
+1585670976.270157	turn light switch on!
+1585670985.854717	turn light switch off!
+1585671005.306867	turn light switch on!
+1585671013.072502	turn light switch off!
+1585671034.444065	turn light switch on!
+1585671064.096172	turn light switch off!
+1585671165.0996711	turn light switch on!
+1585671170.4838169	turn light switch off!
+1585671175.9573572	turn light switch on!
+1585671284.336784	turn light switch off!
+1585671308.216699	turn light switch on!
+1585671311.144852	turn light switch off!
+1585768917.229221	created new switch uuid
+1585770157.378943	user admin failed login attempt
+1585770169.959389	user admin logged in
+1585770300.693793	turn light switch on!
+1585770310.6989372	turn light switch off!
+1585770545.801524	turn light switch on!
+1585770567.5329769	turn light switch off!
+1585770605.162097	turn light switch on!
+1585770613.100202	turn light switch off!

@@ -14,7 +14,6 @@
 				}else{
 					document.location = "/login";
 				}
-			 
 			}
 		   }
 		   xhttp.open("POST", "/api/login");
@@ -26,9 +25,7 @@
     <center><h2>{{ productname }}</h2></center>
 		<center>
 		<table>
-			
         <form method="POST" action="/api/login">
-			
 	<tr><td>username:</td><td><input id="user" type="text" name="user"></td></tr>
 	<tr><td>password:</td><td><input id="pass" type="text" name="pass"></td></tr>
             <tr><td colspan=2 align=right><input  onclick="dologin();" type="button" value="submit" /></td></tr>

@@ -165,13 +165,14 @@ def dolights():
 			content = request.get_json()
 			home = getFile("r00tzSwitchID")
 			rapi = r00tsIOAAPI(house_id=home)
+			print(content)
 			if content['state'] == "ON":
 				touchFile("r00tzSwitchOn")
 				logevent("turn light switch on!")
 			elif content['state'] == "OFF":
 				cleanFile("r00tzSwitchOn")
 				logevent("turn light switch off!")
-			rapi.apiSetStatus(home["switch_id"],content['state'])
+			rapi.apiSetStatus(home,content['state'])
 	else:
 		status="success"
 	if(existsFile("r00tzSwitchOn")):

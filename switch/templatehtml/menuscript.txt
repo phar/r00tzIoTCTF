@@ -1,6 +1,7 @@
 <div id="mySidenav" class="sidenav">
   <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
 
+  <a href="/">Home</a><br>
   <a href="/backup">Backup Configuration</a><br>
   <a href="/viewlog">View Log</a><br>
   <a href="/netcheck">Network Check</a><br>

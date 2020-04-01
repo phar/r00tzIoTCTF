@@ -1,0 +1,89 @@
+<html>
+   <head>
+      <title>r00tz Industrial Control Systems</title>
+   </head>
+   <script>
+	   function doregister() {
+		   var username = document.getElementById("user").value;
+		   var password = document.getElementById("pass").value;
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+		   if (this.readyState == 4 && this.status == 200) {
+			   var state = JSON.parse(this.responseText);
+			   console.log(state)
+			   if(state["result"] == "success"){
+				   document.location = "/";
+			   }else{
+				   //fixme, should probably echo an error here
+			   }
+			
+		   }
+		  }
+		  xhttp.open("POST", "/api/register");
+		  xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		  xhttp.send(JSON.stringify({"username":document.getElementById("user").value,
+									"password":document.getElementById("pass").value,
+									"first":document.getElementById("first").value,
+									"last":document.getElementById("last").value,
+									"phone":document.getElementById("phone").value,
+									"address":document.getElementById("address").value,
+									"city":document.getElementById("city").value,
+									"state":document.getElementById("state").value,
+									}));
+	   }
+	 </script>
+   <body>
+      <center>
+         <h2>{{ productname }}</h2>
+      </center>
+      <center>
+		 <center>
+			<table>
+			   <form>
+				  <tr>
+					 <td colspan=2><br></td>
+				  </tr>
+				  <tr>
+					 <td colspan=2>Register as a first time user:</td>
+				  </tr>
+				  <tr>
+					 <td>Username:</td>
+					 <td><input id="user" type="text" name="user"></td>
+				  </tr>
+				  <tr>
+					 <td>Password:</td>
+					 <td><input id="pass" type="text" name="pass"></td>
+				  </tr>
+				  <tr>
+					 <td>First:</td>
+					 <td><input id="first" type="text" name="first"></td>
+				  </tr>
+				  <tr>
+					 <td>Last:</td>
+					 <td><input id="last" type="text" name="last"></td>
+				  </tr>
+				  <tr>
+					 <td>Phone:</td>
+					 <td><input id="phone" type="text" name="phone"></td>
+				  </tr>
+				  <tr>
+					 <td>Address:</td>
+					 <td><input id="address" type="text" name="address"></td>
+				  </tr>
+				  <tr>
+					 <td>City:</td>
+					 <td><input id="city" type="text" name="city"></td>
+				  </tr>
+				  <tr>
+					 <td>State:</td>
+					 <td><input id="state" type="text" name="state"></td>
+				  </tr>
+				  <tr>
+					 <td colspan=2 align="right"><input onclick="doregister();" type="button" value="Register User"></td>
+				  </tr>
+			   </form>
+			</table>
+		 </center>
+      </center>
+   </body>
+</html>
