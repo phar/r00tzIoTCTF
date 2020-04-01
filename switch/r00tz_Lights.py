@@ -58,21 +58,25 @@ def dogetlog():
 		f = open("logs/%s" % content['log'])
 		fc = f.read()
 		return json.dumps({"status":status,"data":fc})
-	#except:
 	return json.dumps({"status":status})
 
 @app.route("/api/login",methods=['POST','GET'])
 def dologin():
-	with open('userdb.json') as f:
-		userdata = json.load(f)
-	if  request.form['user'] in userdata:
-		if  request.form['pass'] == userdata[request.form['user']]:
-			session['loggedin'] = True
-			logevent("user %s logged in" % request.form['user'])
-		else:
-			logevent("user %s failed login attempt" % request.form['user'])
+	status = {"result":"fail"}
+	if request.is_json:
+		content = request.get_json()
+		with open('userdb.json') as f:
+			userdata = json.load(f)
+		
+		if  content['username'] in userdata:
+			if  content['password'] == userdata[content['username']]:
+				session['loggedin'] = True
+				status["result"] = "success"
+				logevent("user %s logged in" % content['username'])
+			else:
+				logevent("user %s failed login attempt" % content['username'])
+	return json.dumps(status)
 
-	return redirect(url_for('dohome'))
 
 @app.route("/backup",methods=['POST','GET'])
 def dobackupdownload():
@@ -108,11 +112,12 @@ def doregister():
 		if request.is_json:
 			content = request.get_json()
 			rapi = r00tsIOAAPI()
-			x = rapi.apiRegisterHouse(content["username"],  content["password"],  content["first"],  content["last"],  content["address"],  content["city"],  content["state"],  content["phone"]):
+			x = rapi.apiRegisterHouse(content["username"],  content["password"],  content["first"],  content["last"],  content["address"],  content["city"],  content["state"],  content["phone"])
 			if x["result"] == "success":
-				touchFile("r00tzRegistered")
+				x = rapi.apiRegisterSwitch(content["switch_id"])
+				if x["result"] == "success":
+					touchFile("r00tzRegistered")
 			return x
-
 	return json.dumps({"status":status})
 
 
@@ -123,12 +128,14 @@ def doregisterSwitch():
 		if request.is_json:
 			content = request.get_json()
 			rapi = r00tsIOAAPI()
-			rapi.apiLogin(results.username,results.password); #fixme
-			x = rapi.apiRegisterSwitch(content["switch_id"])
+			x = rapi.apiLogin(content["username"],content["password"]);
+			if x["result"] == "success":
+				x = rapi.apiRegisterSwitch(content["switch_id"])
+				if x["result"] == "success":
+					touchFile("r00tzRegistered")
+					status="success"
 			return x
-	
 	return json.dumps({"status":status})
-
 
 
 #@app.route("/restore",methods=['POST','GET'])
@@ -157,7 +164,7 @@ def dolights():
 		if request.is_json:
 			content = request.get_json()
 			home = getFile("r00tzSwitchID")
-			rapi = r00tsIOAAPI(house_id=home["home_id"])
+			rapi = r00tsIOAAPI(house_id=home)
 			if content['state'] == "ON":
 				touchFile("r00tzSwitchOn")
 				logevent("turn light switch on!")
@@ -197,8 +204,8 @@ def dohome():
 		tpl = f.read()
 	return render_template_string(tpl)
 	
-@app.route("/register")
-def doregister():
+@app.route("/registerhtml") #get rid of me FIXME
+def doregisterhtml():
 	if(existsFile("r00tzRegistered")):
 		return redirect(url_for('dologinhtml'))
 	else:

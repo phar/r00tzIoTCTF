@@ -1,5 +1,27 @@
 <html>
     <head><title>r00tz Industrial Control Systems</title></head>
+	<script>
+		function dologin() {
+			var username = document.getElementById("user").value;
+			var password = document.getElementById("pass").value;
+		   var xhttp = new XMLHttpRequest();
+		   xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				var state = JSON.parse(this.responseText);
+				console.log(state)
+				if(state["result"] == "success"){
+					document.location = "/";
+				}else{
+					document.location = "/login";
+				}
+			 
+			}
+		   }
+		   xhttp.open("POST", "/api/login");
+		   xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		   xhttp.send(JSON.stringify({"username":username,"password":password}));
+		}
+	  </script>
     <body>
     <center><h2>{{ productname }}</h2></center>
 		<center>
@@ -7,9 +29,9 @@
 			
         <form method="POST" action="/api/login">
 			
-	<tr><td>username:</td><td><input type="text" name="user"></td></tr>
-	<tr><td>password:</td><td><input type="text" name="pass"></td></tr>
-            <tr><td colspan=2 align=right><input type="submit" value="submit" /></td></tr>
+	<tr><td>username:</td><td><input id="user" type="text" name="user"></td></tr>
+	<tr><td>password:</td><td><input id="pass" type="text" name="pass"></td></tr>
+            <tr><td colspan=2 align=right><input  onclick="dologin();" type="button" value="submit" /></td></tr>
         </form>
 		</table>
 		</center>

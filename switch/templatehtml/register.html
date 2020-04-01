@@ -12,6 +12,61 @@
       	document.getElementById('hsed1').value = uuidv4();
       }
       
+	  function doregister() {
+		  var username = document.getElementById("user").value;
+		  var password = document.getElementById("pass").value;
+		 var xhttp = new XMLHttpRequest();
+		 xhttp.onreadystatechange = function() {
+		  if (this.readyState == 4 && this.status == 200) {
+			  var state = JSON.parse(this.responseText);
+			  console.log(state)
+			  if(state["result"] == "success"){
+				  document.location = "/";
+			  }else{
+				  //fixme, should probably echo an error here
+			  }
+		   
+		  }
+		 }
+		 xhttp.open("POST", "/api/register");
+		 xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		 xhttp.send(JSON.stringify({"username":document.getElementById("user2").value,
+								   "password":document.getElementById("pass2").value,
+								   "switch_id":document.getElementById("switch_id2").value,
+								   "first":document.getElementById("first").value,
+								   "last":document.getElementById("last").value,
+								   "phone":document.getElementById("phone").value,
+								   "address":document.getElementById("address").value,
+								   "city":document.getElementById("city").value,
+								   "state":document.getElementById("state").value,
+								   }));
+	  }
+   
+   function doregisterswitch() {
+	   var username = document.getElementById("user").value;
+	   var password = document.getElementById("pass").value;
+	  var xhttp = new XMLHttpRequest();
+	  xhttp.onreadystatechange = function() {
+	   if (this.readyState == 4 && this.status == 200) {
+		   var state = JSON.parse(this.responseText);
+		   console.log(state)
+		   if(state["result"] == "success"){
+			   document.location = "/";
+		   }else{
+			   //fixme, should probably echo an error here
+		   }
+		
+	   }
+	  }
+	  
+	  xhttp.open("POST", "/api/registerSwitch");
+	  xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+	  xhttp.send(JSON.stringify({"username":document.getElementById("user1").value,
+								"password":document.getElementById("pass1").value,
+								"switch_id":document.getElementById("switch_id1").value,
+								}));
+   }
+	  
    </script>
    <body onload="setuuid()">
       Hi! it looks like your switch has not yet been configured, we'll help you get started by entering your information below:
@@ -27,63 +82,67 @@
                </tr>
                <tr>
                   <td>Switch ID:</td>
-                  <td><input type="text" name="switch_id" value="{{ switchid }}"></td>
+                  <td><input type="text" id="switch_id1" value="{{ switchid }}"></td>
                </tr>
                <tr>
                   <td>Username:</td>
-                  <td><input type="text" name="user"></td>
+                  <td><input type="text" id="user1" name="user"></td>
                </tr>
                <tr>
                   <td>Password:</td>
-                  <td><input type="text" name="pass"></td>
+                  <td><input type="text" id="pass1" name="pass"></td>
                </tr>
                <tr>
-                  <td colspan=2 align="right"><input type="button" value="Register This Switch"></td>
+                  <td colspan=2 align="right"><input type="button" value="Register This Switch" onclick="registerSwitch"></td>
                </tr>
             </form>
-            <form>
-               <tr>
-                  <td colspan=2><br></td>
-               </tr>
-               <tr>
-                  <td colspan=2>Or Register as a first time user:</td>
-               </tr>
-               <tr>
-                  <td>House ID:</td>
-                  <td><input type="text" id="hsed1" name="switch_id" ></td>
-               </tr>
-               <tr>
-                  <td>Switch ID:</td>
-                  <td><input type="text" name="switch_id" value="{{ switchid }}"></td>
-               </tr>
-               <tr>
-                  <td>Username:</td>
-                  <td><input type="text" name="user"></td>
-               </tr>
-               <tr>
-                  <td>Password:</td>
-                  <td><input type="text" name="pass"></td>
-               </tr>
-               <tr>
-                  <td>Phone:</td>
-                  <td><input type="text" name="pass"></td>
-               </tr>
-               <tr>
-                  <td>Address:</td>
-                  <td><input type="text" name="pass"></td>
-               </tr>
-               <tr>
-                  <td>City:</td>
-                  <td><input type="text" name="pass"></td>
-               </tr>
-               <tr>
-                  <td>State:</td>
-                  <td><input type="text" name="pass"></td>
-               </tr>
-               <tr>
-                  <td colspan=2 align="right"><input type="button" value="Register Switch&User"></td>
-               </tr>
-            </form>
+			<form>
+				<tr>
+				   <td colspan=2><br></td>
+				</tr>
+				<tr>
+				   <td colspan=2>Register as a first time user:</td>
+				</tr>
+				<tr>
+				   <td>Switch ID:</td>
+				   <td><input type="text" id="switch_id2" value="{{ switchid }}"></td>
+				</tr>
+				<tr>
+				   <td>Username:</td>
+				   <td><input id="user2" type="text" name="user"></td>
+				</tr>
+				<tr>
+				   <td>Password:</td>
+				   <td><input id="pass2" type="text" name="pass"></td>
+				</tr>
+				<tr>
+				   <td>First:</td>
+				   <td><input id="first" type="text" name="first"></td>
+				</tr>
+				<tr>
+				   <td>Last:</td>
+				   <td><input id="last" type="text" name="last"></td>
+				</tr>
+				<tr>
+				   <td>Phone:</td>
+				   <td><input id="phone" type="text" name="phone"></td>
+				</tr>
+				<tr>
+				   <td>Address:</td>
+				   <td><input id="address" type="text" name="address"></td>
+				</tr>
+				<tr>
+				   <td>City:</td>
+				   <td><input id="city" type="text" name="city"></td>
+				</tr>
+				<tr>
+				   <td>State:</td>
+				   <td><input id="state" type="text" name="state"></td>
+				</tr>
+				<tr>
+				   <td colspan=2 align="right"><input onclick="doregister();" type="button" value="Register User"></td>
+				</tr>
+			 </form>
          </table>
       </center>
    </body>
