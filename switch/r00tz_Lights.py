@@ -27,16 +27,7 @@ def force_login_if_needed():
 
 PRODUCTNAME  = "r00tz Lighting Switch Interface v1.0"
 
-#@app.route('/<path:path>')
-#def send_js(path):
-#	if path.endswith("html"): #vuln
-#		with open('templatehtml/%s' % path) as f:
-#		   tpl = f.read()
-#		return render_template_string(tpl)
-#	else:
-#		return send_from_directory('templatehtml', path)
-#
-		
+
 @app.context_processor
 def context_proc():
 	fsty = open("templatehtml/menustyle.txt")
@@ -110,13 +101,34 @@ def doping():
 	return json.dumps({"status":status})
 
 
-#@app.route("/api/register",methods=['POST','GET'])
-#def doregister():
-#	status="failure"
-#	if request.method == 'POST':
-#		if request.is_json:
-#			content = request.get_json()
-#	return json.dumps({"status":status})
+@app.route("/api/register",methods=['POST','GET'])
+def doregister():
+	status="failure"
+	if request.method == 'POST':
+		if request.is_json:
+			content = request.get_json()
+			rapi = r00tsIOAAPI()
+			x = rapi.apiRegisterHouse(content["username"],  content["password"],  content["first"],  content["last"],  content["address"],  content["city"],  content["state"],  content["phone"]):
+			if x["result"] == "success":
+				touchFile("r00tzRegistered")
+			return x
+
+	return json.dumps({"status":status})
+
+
+@app.route("/api/registerSwitch",methods=['POST','GET'])
+def doregisterSwitch():
+	status="failure"
+	if request.method == 'POST':
+		if request.is_json:
+			content = request.get_json()
+			rapi = r00tsIOAAPI()
+			rapi.apiLogin(results.username,results.password); #fixme
+			x = rapi.apiRegisterSwitch(content["switch_id"])
+			return x
+	
+	return json.dumps({"status":status})
+
 
 
 #@app.route("/restore",methods=['POST','GET'])
@@ -145,14 +157,14 @@ def dolights():
 		if request.is_json:
 			content = request.get_json()
 			home = getFile("r00tzSwitchID")
+			rapi = r00tsIOAAPI(house_id=home["home_id"])
 			if content['state'] == "ON":
 				touchFile("r00tzSwitchOn")
 				logevent("turn light switch on!")
 			elif content['state'] == "OFF":
 				cleanFile("r00tzSwitchOn")
 				logevent("turn light switch off!")
-			apiSetStatus(home["home_id"],home["switch_id"],content['state'])
-	
+			rapi.apiSetStatus(home["switch_id"],content['state'])
 	else:
 		status="success"
 	if(existsFile("r00tzSwitchOn")):
@@ -176,7 +188,6 @@ def cleanFile(file):
 def existsFile(file):
 	return path.isfile(os.path.join("configs", file))
  
-# which URL should call the associated function.
 @app.route("/")
 def dohome():
 	li = force_login_if_needed()

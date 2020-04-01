@@ -14,3 +14,8 @@ TODO generate fake user data
 TODO: more logging
 TODO:  cleanup and comment
 TODO: configure cloud address (hardcoded as localhost:5001 for dev)
+TODO *ensure* some input will lead to a flask error being displayed
+TODO mock firmware update framework
+TODO add r00tz logo to all the HTML pages for branding
+TODO commandline tool should have an option to act on the getstatusx
+TODO add a "you dont have any switches" to javascript parser

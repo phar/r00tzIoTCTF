@@ -7,16 +7,6 @@ import time
 
 app = Flask(__name__)
 
- 
-# which URL should call the associated function.
-#@app.route("/")
-#def home():
-#    return render_template_string("BARL BARK")
-#
-
-	
-#
-
 PRODUCTNAME  = "r00tz Cloud Interface v1.0"
 
 @app.route("/")
@@ -88,6 +78,27 @@ def dogetimages(filename):
 	return send_from_directory(directory='./images/', filename=filename)
 
 
+@app.route("/api/registerSwitch", methods=['POST'])
+def doregisterswitch():
+	status = {"result":"fail"}
+	if request.is_json:
+		conn = getdbconn()
+		c = conn.cursor()
+		content = request.get_json()
+		try:
+			c.execute("insert or replace into switch_status (switch_id,house_id,status) values (?,?,?)" , (content["switch_id"], content["house_id"], content["status"]))
+			status = {"result":"success", "switch_id":content["switch_id"]}
+			logevent(content["house_id"], "house_id %s is now registered" % (content["house_id"]))
+		except:
+			conn.rollback()
+			status["error"] = "this switch already exists for this home"
+			logevent(None, "error from ip address XXXX making registerswitch api query")
+	else:
+		status["error"] = "no json data provided"
+		logevent(None, "non-json data from ip address XXXX making registerswitch api query")
+	return json.dumps(status)
+
+
 @app.route("/api/register", methods=['POST'])
 def doregister():
 	status = {"result":"fail"}
@@ -96,9 +107,10 @@ def doregister():
 		c = conn.cursor()
 		content = request.get_json()
 		try:
-			c.execute("insert into homes (house_id,username, password, first, last, address, city, state, phone) values (?,?,?,?,?,?,?,?,?)" , (content["house_id"],content["username"], content["password"], content["first"], content["last"], content["address"],content["city"],content["state"],content["phone"]))
+			house_id = str(uuid.uuid4()) #fixme, make this a sequential uuid value
+			c.execute("insert into homes (house_id,username, password, first, last, address, city, state, phone) values (?,?,?,?,?,?,?,?,?)" , (house_id,content["username"], content["password"], content["first"], content["last"], content["address"],content["city"],content["state"],content["phone"]))
 			conn.commit()
-			status = {"result":"success"}
+			status = {"result":"success", "house_id":house_id}
 			logevent(content["house_id"], "house_id %s is now registered" % (content["house_id"]))
 		except:
 			conn.rollback()
@@ -106,9 +118,8 @@ def doregister():
 			logevent(None, "error from ip address XXXX making register api query")
 	else:
 		status["error"] = "no json data provided"
-		logevent(None, "non-json data from ip address XXXX making getStatus api query")
+		logevent(None, "non-json data from ip address XXXX making register api query")
 
-	print(status)
 	return json.dumps(status)
 		 
 		 
@@ -121,8 +132,7 @@ def dosetstatus():
 		content = request.get_json()
 		#i should make this a sql ijection
 		try:
-			print(content)
-			c.execute("insert or replace into switch_status (switch_id,house_id,status) values (?,?,?)" , (content["switch_id"], content["house_id"], content["status"]))
+			c.execute("update switch_status set status=? where house_id=? and switch_id=?" , (content["status"],  content["house_id"],content["switch_id"]))
 			status = {"result":"success", "status":content["status"]}
 			conn.commit()
 			logevent(content["house_id"], "house_id %s has set status %s on switch %s" % (content["house_id"], content["status"], content["switch_id"]))
@@ -168,19 +178,27 @@ def dologout():
 def dologin():
 	conn = getdbconn()
 	c = conn.cursor()
-	try:
-		print(request.form['user'])
-		c.execute("select password,house_id from homes where username=(?);", (request.form['user'],))
-		row = c.fetchone()
-		if  request.form['pass'] == row[0]:
-			session['loggedin'] = True
-			session['house_id'] = row[1]
-			logevent(row[1], "user %s logged in")
-		else:
-			logevent(row[1], "user %s  failed to logged in" % request.form['user'])
-	except:
-		logevent(None, "database error during login attempt")
-	return redirect(url_for('domain'))
+	status = {"result":"fail"}
+	if request.is_json:
+		conn = getdbconn()
+		c = conn.cursor()
+		content = request.get_json()
+		print(content)
+		try:
+			c.execute("select password,house_id from homes where username=(?);", (content['username'],))
+			row = c.fetchone()
+			if  content['password'] == row[0]:
+				session['loggedin'] = True
+				session['house_id'] = row[1]
+				logevent(row[1], "user %s logged in")
+				status["house_id"] = session['house_id']
+				status["result"] = "success"
+			else:
+				logevent(row[1], "user %s  failed to logged in" % content['usernamne'])
+		except:
+			logevent(None, "database error during login attempt")
+
+	return json.dumps(status)
 
 	
 def logevent(house_id, eventstring):
@@ -200,8 +218,6 @@ def buildDB(conn):
 
 
 if __name__ == "__main__":
-	# Flask constructor takes the name of current module (__name__) as argument.
-	# Enable debug mode
 	app.secret_key = "any random string" #;)
 	app.config['DEBUG'] = True
 	conn = getdbconn()
