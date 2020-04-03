@@ -3,7 +3,7 @@ import sqlite3
 import json
 import uuid
 import time
-
+import os
 
 app = Flask(__name__)
 
@@ -16,18 +16,27 @@ def dohome():
 	return render_template_string(tpl)
 
 @app.route('/<path:path>')
-def send_js(path):
+def templatehtml(path):
 	if path.endswith("html"): #vuln
 		with open('cloud_html/%s' % path) as f:
 		   tpl = f.read()
 		return render_template_string(tpl)
 	else:
 		return send_from_directory('cloud_html', path)
- 
+
+@app.route('/cloud/<path:path>')
+def app_templatehtml(path):
+	if path.endswith("html"): #vuln
+		with open('templatehtml/%s' % path) as f:
+		   tpl = f.read()
+		return render_template_string(tpl)
+	else:
+		return send_from_directory('templatehtml', path)
+			
 @app.context_processor
 def context_proc():
-	fsty = open("templatehtml/menustyle.txt")
-	fscr = open("templatehtml/menuscript.txt")
+	fsty = open(os.path.join("templatehtml","menustyle.txt"))
+	fscr = open(os.path.join("templatehtml","menuscript.txt"))
 	customstuff = {"menustyle":fsty.read(), "menuscript":fscr.read(), "productname":PRODUCTNAME}
 	fscr.close()
 	fsty.close()
@@ -99,6 +108,12 @@ def doregisterswitch():
 	return json.dumps(status)
 
 
+@app.route("/api/update", methods=['GET'])
+def doupdate():
+	status = {"version":"1.0", "file":"r00tzLights_1.0_fw.img"}
+	return json.dumps(status)
+
+	
 @app.route("/api/register", methods=['POST'])
 def doregister():
 	status = {"result":"fail"}
@@ -145,25 +160,6 @@ def dosetstatus():
 		logevent(None, "non-json data from ip address XXXX making setStatus api query")
 			
 	return json.dumps(status)
-	
-
-@app.route("/login")
-def dologinhtml():
-	with open('templatehtml/login.html') as f:
-	   tpl = f.read()
-	return render_template_string(tpl)
-	
-@app.route("/admin")
-def doadminloginhtml():
-	with open('templatehtml/admin.html') as f:
-	   tpl = f.read()
-	return render_template_string(tpl)
-	
-@app.route("/main")
-def domain():
-	with open('templatehtml/main.html') as f:
-	   tpl = f.read()
-	return render_template_string(tpl)
 	
 	
 @app.route("/logout")

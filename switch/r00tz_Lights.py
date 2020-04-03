@@ -1,5 +1,5 @@
-from flask import Flask, Response, render_template_string, request, session,send_file, redirect, url_for, escape, request,send_from_directory  # Importing the Flask modules
-from time import sleep      # Import sleep module from time library to add delays
+from flask import Flask, Response, render_template_string, request, session,send_file, redirect, url_for, escape, request,send_from_directory
+from time import sleep
 import json
 import zipfile
 import io
@@ -11,6 +11,9 @@ import uuid
 from update_switch_status import *
 app = Flask(__name__)
 
+
+PRODUCTNAME  = "r00tz Lighting Switch Interface v1.0"
+
 def force_login_if_needed():
 	if(existsFile("r00tzRegistered")):
 		if 'loggedin' not in session:
@@ -19,19 +22,15 @@ def force_login_if_needed():
 			if session['loggedin'] == True:
 				return False
 			else:
-				return redirect(url_for('dologinhtml'))
+				return redirect("/login.html")
 	else:
-		return redirect(url_for('doregisterhtml'))
+		return redirect("/login.html")
 	return False
-
-
-PRODUCTNAME  = "r00tz Lighting Switch Interface v1.0"
-
 
 @app.context_processor
 def context_proc():
-	fsty = open("templatehtml/menustyle.txt")
-	fscr = open("templatehtml/menuscript.txt")
+	fsty = open(os.path.join("templatehtml","menustyle.txt"))
+	fscr = open(os.path.join("templatehtml","menuscript.txt"))
 	swid = getFile("r00tzSwitchID")
 	customstuff = {"switchid":swid,"menustyle":fsty.read(), "menuscript":fscr.read(), "productname":PRODUCTNAME}
 	fscr.close()
@@ -40,7 +39,7 @@ def context_proc():
 	return {**session , **customstuff}
 	
 def logevent(eventstring):
-	f  = open("logs/switchlog.txt","a")
+	f  = open(os.path.join("logs","switchlog.txt"),"a")
 	f.write("%s\t%s\r\n" % (time.time(), eventstring))
 	f.close()
 
@@ -138,22 +137,27 @@ def doregisterSwitch():
 	return json.dumps({"status":status})
 
 
-#@app.route("/restore",methods=['POST','GET'])
-#def dorestore():
-#	status="failure"
-#	if request.method == 'POST':
-#		if 'file' not in request.files:
-#		   return redirect(request.url)
-#		file = request.files['file']
-#		if file.filename == '':
-#			flash('No selected file')
-#			return redirect(request.url)
-#		if file and allowed_file(file.filename):
-#			filename = secure_filename(file.filename)
-##		   file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-#			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-#			return redirect(url_for('uploaded_file', filename=filename))
-#	 return redirect(request.url)
+@app.route("/factory",methods=['POST','GET'])
+def factorydefault(): #FIXME not finished
+	status="failure"
+	#factory reset
+
+@app.route("/restore",methods=['POST','GET'])
+def dorestore(): #FIXME not finished
+	status="failure"
+	if request.method == 'POST':
+		if 'file' not in request.files:
+		   return redirect(request.url)
+		file = request.files['file']
+		if file.filename == '':
+			flash('No selected file')
+			return redirect(request.url)
+			
+		if file and allowed_file(file.filename):
+			filename = secure_filename(file.filename)
+			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+			return redirect(url_for('uploaded_file', filename=filename))
+	 return redirect(request.url)
 
 
 @app.route("/api/lights",methods=['POST','GET'])
@@ -204,40 +208,16 @@ def dohome():
 	with open('templatehtml/main.html') as f:
 		tpl = f.read()
 	return render_template_string(tpl)
-	
-@app.route("/registerhtml") #get rid of me FIXME
-def doregisterhtml():
-	if(existsFile("r00tzRegistered")):
-		return redirect(url_for('dologinhtml'))
-	else:
-		with open('templatehtml/register.html') as f:
-			tpl = f.read()
+
+@app.route('/<path:path>')
+def templatehtml(path):
+	if path.endswith("html"): #vuln
+		with open('templatehtml/%s' % path) as f:
+		   tpl = f.read()
 		return render_template_string(tpl)
-	
-@app.route("/login")
-def dologinhtml():
-	with open('templatehtml/login.html') as f:
-	   tpl = f.read()
-	return render_template_string(tpl)
-
-
-@app.route("/viewlog")
-def dologhtml():
-	li = force_login_if_needed()
-	if li is not False:
-		return li
-	with open('templatehtml/logview.html') as f:
-	   tpl = f.read()
-	return render_template_string(tpl)
-
-@app.route("/netcheck")
-def donetcheckhtml():
-	li = force_login_if_needed()
-	if li is not False:
-		return li
-	with open('templatehtml/netcheck.html') as f:
-	   tpl = f.read()
-	return render_template_string(tpl)
+	else:
+		return send_from_directory('templatehtml', path)
+ 
 
 @app.route("/logout")
 def dologout():

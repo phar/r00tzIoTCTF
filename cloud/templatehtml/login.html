@@ -12,11 +12,10 @@
 			   var state = JSON.parse(this.responseText);
 			   console.log(state)
 			   if(state["result"] == "success"){
-				   document.location = "/main";
+				   document.location = "/cloud/main.html";
 			   }else{
-				   document.location = "/login";
-			   }
-			
+				   document.location = "/cloud/login.html";
+			   }			
 		   }
 		  }
 		  xhttp.open("POST", "/api/login");

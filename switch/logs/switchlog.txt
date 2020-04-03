@@ -24,3 +24,7 @@
 1585770567.5329769	turn light switch off!
 1585770605.162097	turn light switch on!
 1585770613.100202	turn light switch off!
+1585865888.9796522	user admin failed login attempt
+1585865962.3810291	user admin failed login attempt
+1585865975.022389	user admin logged in
+1585866165.1773791	user logout event

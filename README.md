@@ -5,17 +5,11 @@ run switch/r00ts_switch.py from its directory
 http://localhost:5000  iot switch
 http://localhost:5001	iot switch vendor website
 
-TODO command line tool argparse 
+TODO finish file upload
 TODO generate fake user data 
-#TODO: new  switch registration
-#TODO: store initalization state
 #TODO: restore factory defaults
 #TODO: restore saved configuration
+#TODO create r00tzLights_1.0_fw.img file on the could server
 TODO: more logging
-TODO:  cleanup and comment
-TODO: configure cloud address (hardcoded as localhost:5001 for dev)
-TODO *ensure* some input will lead to a flask error being displayed
-TODO mock firmware update framework
 TODO add r00tz logo to all the HTML pages for branding
-TODO commandline tool should have an option to act on the getstatusx
-TODO add a "you dont have any switches" to javascript parser
+TODO admin interface.. duh.. kinda skipped this

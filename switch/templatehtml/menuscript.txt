@@ -3,8 +3,9 @@
 
   <a href="/">Home</a><br>
   <a href="/backup">Backup Configuration</a><br>
-  <a href="/viewlog">View Log</a><br>
-  <a href="/netcheck">Network Check</a><br>
+  <a href="/restore.html">Restore Configuration</a><br>
+  <a href="/logview.html">View Log</a><br>
+  <a href="/netcheck.html">Network Check</a><br>
   <a href="http://r00tzIndustries.local">About</a><br>
   <a href="http://r00tzIndustries.local">r00tz Industries Homepage</a><br>
   <br>
