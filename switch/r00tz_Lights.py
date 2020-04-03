@@ -157,7 +157,7 @@ def dorestore(): #FIXME not finished
 			filename = secure_filename(file.filename)
 			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 			return redirect(url_for('uploaded_file', filename=filename))
-	 return redirect(request.url)
+	return redirect(request.url)
 
 
 @app.route("/api/lights",methods=['POST','GET'])

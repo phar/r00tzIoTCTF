@@ -12,10 +12,14 @@
 			   var state = JSON.parse(this.responseText);
 			   console.log(state)
 			   if(state["result"] == "success"){
-				   document.location = "/cloud/main.html";
+				   if(state["admin"]){
+					   document.location = "/cloud/admin.html";
+				   }else{
+					   document.location = "/cloud/main.html";
+				   }
 			   }else{
 				   document.location = "/cloud/login.html";
-			   }			
+			   }
 		   }
 		  }
 		  xhttp.open("POST", "/api/login");
@@ -36,10 +40,10 @@
                </tr>
                <tr>
                   <td>password:</td>
-                  <td><input id="pass" type="text" name="pass"></td>
+                  <td><input id="pass" type="password" name="pass"></td>
                </tr>
                <tr>
-				   <td><input type="button" value="New User"  onClick="window.location = '/register.html';"/></td>
+				   <td><input type="button" value="New User" onClick="window.location = '/register.html';"/></td>
                   <td><input  onclick="dologin();" type="button" value="submit" /></td>
                </tr>
             </form>

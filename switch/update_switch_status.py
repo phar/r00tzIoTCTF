@@ -5,7 +5,6 @@ import argparse
 
 try:
 	import RPi.GPIO as GPIO
-	
 	RPI_IOT_SWITCH_PIN  = 26
 	RPI_IOT_SWITCH_OFF_STATE = GPIO.HIGH
 	RPI_IOT_SWITCH_ON_STATE = GPIO.LOW
@@ -36,11 +35,14 @@ class r00tsIOAAPI():
 	def apiGetStatus(self, switch_id):
 		return self.api_request("getStatus", {"house_id":self.house_id,"switch_id":switch_id})
 
+	def apiCheckUpdate(self):
+		return self.api_request("update", {})
+
 	def apiRegisterHouse(self, username, password, first, last, address, city, state, phone):
 		return self.api_request("register", {"username":username,"password":password,"first":first,"last":last,"address":address,"city":city,"state":state,"phone":phone})
 
-	def apiRegisterSwitch(self, switch_id):
-		return self.api_request("registerSwitch", {"house_id":self.house_id,"switch_id":switch_id})
+	def apiRegisterSwitch(self, switch_name):
+		return self.api_request("registerSwitch", {"house_id":self.house_id, "switch_name":switch_name})
 
  
 if __name__ == "__main__":
@@ -48,7 +50,7 @@ if __name__ == "__main__":
 
 	parser.add_argument('--username', action="store", )
 	parser.add_argument('--password', action="store", )
-	parser.add_argument('--switch_id', action="store" )
+	parser.add_argument('--switch_name', action="store" )
 	parser.add_argument('--set', action="store_true", )
 	parser.add_argument('--get', action="store_true", )
 	parser.add_argument('--register_house', action="store_true", )
@@ -60,6 +62,7 @@ if __name__ == "__main__":
 	
 	rapi.apiLogin(results.username,results.password);
 	if results.set:
+		parser.add_argument('--switch_id', action="store")
 		parser.add_argument('--state', action="store", type=int)
 		sgresults = parser.parse_args()
 		print(sgresults)
@@ -70,7 +73,8 @@ if __name__ == "__main__":
 		print(rapi.apiSetStatus(sgresults.switch_id,state))
 	
 	elif results.get:
-		parser.add_argument('--update', action="store_true")
+		parser.add_argument('--switch_id', action="store")
+		parser.add_argument('--updatestatus', action="store_true")
 		sgresults = parser.parse_args()
 		
 		ret = rapi.apiGetStatus(sgresults.switch_id)
@@ -88,7 +92,7 @@ if __name__ == "__main__":
 
 	elif results.register_switch:
 		sgresults = parser.parse_args()
-		print(rapi.apiRegisterSwitch(sgresults.switch_id))
+		print(rapi.apiRegisterSwitch(sgresults.switch_name))
 	
 	elif results.register_house:
 		parser.add_argument('--first', action="store", )
@@ -99,7 +103,16 @@ if __name__ == "__main__":
 		parser.add_argument('--phone', action="store", )
 		sgresults = parser.parse_args()
 		print(rapi.apiRegisterHouse(sgresults.switch_id,sgresults.password,sgresults.first,sgresults.last,sgresults.address,sgresults.city,sgresults.state,sgresults.phone))
-	
+
+	elif results.update:
+		parser.add_argument('--apply', action="store_true")
+		sgresults = parser.parse_args()
+		ret = rapi.apiCheckUpdate()
+		#fixme download the image
+		#fixme unzip the image
+		#fixme exectue update.sh
+
+
 # python update_switch_status.py --home_id "Sdf34sdfsD"  --switch_id "bathroom lights" --register --username "foobar"  --password "password" --first "firsty" --last "lasty" --address "address" --city "city" --state="WA" --phone "92873492"
 #update_switch_status.py  --username "foobar"  --password "password"  --switch_id "bathroom lights" --get
 #update_switch_status.py --username "foobar"  --password "password"   --switch_id "bathroom lights" --set --state 0

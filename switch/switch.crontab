@@ -1,1 +1,2 @@
-* * * * *  /home/r00ts/util/update_switch_status.py
+* * * * *  /home/r00ts/util/update_switch_status.py --house_id `cat /r00tz/app/config/r00tzSwitchID` --switch_id `cat /r00tz/app/config/r00tzSwitchID` --get --updatestatus
+*/15 * * * *  /home/r00ts/util/update_switch_status.py --update --apply     #fixme none of these paths are right

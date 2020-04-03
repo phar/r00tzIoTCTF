@@ -13,38 +13,42 @@
       }
       
 	  function doregister() {
-		  var username = document.getElementById("user").value;
-		  var password = document.getElementById("pass").value;
-		 var xhttp = new XMLHttpRequest();
-		 xhttp.onreadystatechange = function() {
-		  if (this.readyState == 4 && this.status == 200) {
-			  var state = JSON.parse(this.responseText);
-			  console.log(state)
-			  if(state["result"] == "success"){
-				  document.location = "/";
-			  }else{
-				  //fixme, should probably echo an error here
+		  var username = document.getElementById("user2").value;
+		  var confirmpass = document.getElementById("pass2r").value;
+		  var password = document.getElementById("pass2").value;
+		  if(confirmpass == password){
+			 var xhttp = new XMLHttpRequest();
+			 xhttp.onreadystatechange = function() {
+			  if (this.readyState == 4 && this.status == 200) {
+				  var state = JSON.parse(this.responseText);
+				  console.log(state)
+				  if(state["result"] == "success"){
+					  document.location = "/";
+				  }else{
+					  alert("something went wrong!!");
+				  }
 			  }
-		   
+			 }
+			 xhttp.open("POST", "/api/register");
+			 xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+			 xhttp.send(JSON.stringify({"username":document.getElementById("user2").value,
+									   "password":document.getElementById("pass2").value,
+									   "switch_id":document.getElementById("switch_id2").value,
+									   "first":document.getElementById("first").value,
+									   "last":document.getElementById("last").value,
+									   "phone":document.getElementById("phone").value,
+									   "address":document.getElementById("address").value,
+									   "city":document.getElementById("city").value,
+									   "state":document.getElementById("state").value,
+									   }));
+		  }else{
+			  alert("password and confirmation passwords do not match!")
 		  }
-		 }
-		 xhttp.open("POST", "/api/register");
-		 xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-		 xhttp.send(JSON.stringify({"username":document.getElementById("user2").value,
-								   "password":document.getElementById("pass2").value,
-								   "switch_id":document.getElementById("switch_id2").value,
-								   "first":document.getElementById("first").value,
-								   "last":document.getElementById("last").value,
-								   "phone":document.getElementById("phone").value,
-								   "address":document.getElementById("address").value,
-								   "city":document.getElementById("city").value,
-								   "state":document.getElementById("state").value,
-								   }));
 	  }
    
    function doregisterswitch() {
-	   var username = document.getElementById("user").value;
-	   var password = document.getElementById("pass").value;
+	  var username = document.getElementById("user1").value;
+	  var password = document.getElementById("pass1").value;
 	  var xhttp = new XMLHttpRequest();
 	  xhttp.onreadystatechange = function() {
 	   if (this.readyState == 4 && this.status == 200) {
@@ -53,9 +57,8 @@
 		   if(state["result"] == "success"){
 			   document.location = "/";
 		   }else{
-			   //fixme, should probably echo an error here
-		   }
-		
+			    alert("something went wrong!!");
+		   }		
 	   }
 	  }
 	  
@@ -113,7 +116,11 @@
 				</tr>
 				<tr>
 				   <td>Password:</td>
-				   <td><input id="pass2" type="text" name="pass"></td>
+				   <td><input id="pass2" type="password" name="pass"></td>
+				</tr>
+				<tr>
+				   <td>Repeat Password:</td>
+				   <td><input id="pass2r" type="password" name="pass2"></td>
 				</tr>
 				<tr>
 				   <td>First:</td>
