@@ -12,9 +12,10 @@
 			   var state = JSON.parse(this.responseText);
 			   console.log(state)
 			   if(state["result"] == "success"){
+				   alert("success! you can now login with your credentials");
 				   document.location = "/";
 			   }else{
-				    alert("something went wrong!!");
+				    alert("something went wrong!!\r\n" + state["error"] );
 			   }
 			
 		   }
