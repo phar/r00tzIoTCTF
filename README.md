@@ -6,10 +6,12 @@ http://localhost:5000  iot switch
 http://localhost:5001	iot switch vendor website
 
 TODO finish file upload
-#TODO: restore factory defaults
 #TODO: restore saved configuration
+
 #TODO create r00tzLights_1.0_fw.img file on the could server
+
 TODO: more logging
+
 TODO debug
-TODO admin password change
+
 TODO cloud page javascript is broken
