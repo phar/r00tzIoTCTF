@@ -1,0 +1,32 @@
+arbitrary command execution in ping count argument
+
+arbitrary file upload in config file restore, only checks that the file _endswith_ config.zip,(test that null works here)
+
+poor or no session checking on many API calls
+
+both client and server run in flask debug mode, written by the same developer, using the same devopment key
+
+no input validation on switch names, includeed in the admin interface log (XSS/XSRF)
+
+no input ggalidation on username, included in the admin view innerhtml (XSRF/XSS)
+
+there is no session checking on the admin /view/ API, which will leak home_id's
+
+while a guid switchid and home ID are needed to switch lights which you can only get from login creds, once you know the home ID, switchID's are sequentially based on homeID's
+which can be combined with a home_id leak
+
+there is a backdoor account with an unchangable password on every switch (you would see it in a downloaded backup config)
+
+the firmware updater is not over TLS, and will download any file instructed from the cloud server and execute update.sh
+
+firmware updater script runs ever 15 minutes to maximize the chance of exploiting it
+
+the cloud server is not over TLS and light switches will actuate as the "cloud" commands
+
+the main template html formatter function (used for serving up anything that ends in .html) performs no input validation
+on the input path before applying the template and rendering the file, ../../../../../etc/passwd%00.html will get you a 
+file download... tested this and python now catches it with a "ValueError: embedded null byte", i bypassed it here and for the upload
+
+blind sql injection on cloud login
+
+sql injection on getSwitchs, non-blind

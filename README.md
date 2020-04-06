@@ -15,3 +15,4 @@ TODO: more logging
 TODO debug
 
 TODO cloud page javascript is broken
+ TODO admin log view innerHTML

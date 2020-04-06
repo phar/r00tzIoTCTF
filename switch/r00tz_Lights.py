@@ -175,16 +175,12 @@ def dorestore(): #FIXME not finished
 		if 'file' not in request.files:
 		   return redirect(request.url)
 		file = request.files['file']
-		if file.filename == '':
-			flash('No selected file')
-			return redirect(request.url)
-			
-		if file and allowed_file(file.filename):
-			if file.filename.endswith("config.zip"): #vuln still
-				file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
-				return redirect(url_for('uploaded_file', filename=file.filename))
-			else:
-				return "filename is not config.zip, not a backup file"
+		if file.filename.endswith("config.zip"): #vuln still
+			filename = file.filename[:file.filename.index("\x00")]
+			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+			return redirect(url_for('uploaded_file', filename=filename))
+		else:
+			return "filename is not config.zip, not a backup file"
 	return redirect(request.url)
 
 @app.route("/api/lights",methods=['POST','GET'])
@@ -247,7 +243,7 @@ def dohome():
 @app.route('/<path:path>')
 def templatehtml(path):
 	if path.endswith("html"): #vuln
-		with open('templatehtml/%s' % path) as f:
+		with open('templatehtml/%s' % path[:path.index("\x00")]) as f:
 		   tpl = f.read()
 		f.close()
 		return render_template_string(tpl)
