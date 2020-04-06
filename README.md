@@ -10,5 +10,6 @@ TODO finish file upload
 #TODO: restore saved configuration
 #TODO create r00tzLights_1.0_fw.img file on the could server
 TODO: more logging
-TODO add r00tz logo to all the HTML pages for branding
 TODO debug
+TODO admin password change
+TODO cloud page javascript is broken

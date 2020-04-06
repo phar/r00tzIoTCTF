@@ -1,7 +1,6 @@
 from flask import Flask,redirect,url_for, render_template_string, request,session,send_from_directory  # Importing the Flask modules
 import sqlite3
 import json
-import uuid
 import time
 import os
 
@@ -13,6 +12,7 @@ PRODUCTNAME  = "r00tz Cloud Interface v1.0"
 def dohome():
 	with open('cloud_html/index.html') as f:
 	   tpl = f.read()
+	f.close()
 	return render_template_string(tpl)
 
 @app.route('/<path:path>')
@@ -20,6 +20,7 @@ def templatehtml(path):
 	if path.endswith("html"): #vuln
 		with open('cloud_html/%s' % path) as f:
 		   tpl = f.read()
+		f.close()
 		return render_template_string(tpl)
 	else:
 		return send_from_directory('cloud_html', path)
@@ -29,6 +30,7 @@ def app_templatehtml(path):
 	if path.endswith("html"): #vuln
 		with open('templatehtml/%s' % path) as f:
 		   tpl = f.read()
+		f.close()
 		return render_template_string(tpl)
 	else:
 		return send_from_directory('templatehtml', path)
@@ -64,7 +66,7 @@ def dogethomes():
 		conn = getdbconn()
 		c = conn.cursor()
 		content = request.get_json()
-		c.execute("select homes.house_id, homes.username, count(status) from homes,switch_status where homes.house_id=switch_status.house_id group by homes.house_id;")
+		c.execute("select homes.house_id, homes.username, count(status) from homes left join switch_status on homes.house_id=switch_status.house_id group by homes.house_id;")
 		status = {"result":"success", "status":c.fetchall()}
 	#	logevent(content["house_id"], "house_id %s has requested status on switch %s" % (content["house_id"], content["switch_id"]))
 		return json.dumps(status)
@@ -84,7 +86,7 @@ def dogetswitches():
 		else:
 			c.execute("select switch_id, switch_name, status from switch_status;")
 		status = {"result":"success", "status":c.fetchall()}
-	#	logevent(content["house_id"], "house_id %s has requested status on switch %s" % (content["house_id"], content["switch_id"]))
+		print(status)
 		return json.dumps(status)
 
 
@@ -125,7 +127,10 @@ def doregisterswitch():
 		c = conn.cursor()
 		content = request.get_json()
 		try:
-			switchid = str(uuid.uuid4())
+			c.execute("select homes.house_id, count(status) from homes left join switch_status on homes.house_id=switch_status.house_id where  homes.house_id=? group by homes.house_id;",(content["house_id"],))
+			(house_id, count) = c.fetchone()
+			switch_id = "-".join(house_id.split("-")[:-1] + ["%012d" % (count,)])
+
 			c.execute("insert into switch_status (switch_id,switch_name,house_id,status) values (?,?,?,?)" , (switchid,content["switch_name"], content["house_id"], "OFF"))
 			conn.commit()
 			status = {"result":"success", "switch_id":switchid}
@@ -180,6 +185,7 @@ def dosetstatus():
 		#i should make this a sql ijection
 		try:
 			c.execute("update switch_status set status=? where house_id=? and switch_id=?" , (content["status"],  content["house_id"],content["switch_id"]))
+			print("update switch_status set status=? where house_id=? and switch_id=?" , (content["status"],  content["house_id"],content["switch_id"]))
 			status = {"result":"success", "status":content["status"]}
 			conn.commit()
 			logevent(content["house_id"], "house_id %s has set status %s on switch %s" % (content["house_id"], content["status"], content["switch_id"]))
@@ -211,7 +217,6 @@ def dologin():
 		conn = getdbconn()
 		c = conn.cursor()
 		content = request.get_json()
-		print(content)
 		try:
 			c.execute("select password,house_id,admin from homes where username=(?);", (content['username'],))
 			row = c.fetchone()

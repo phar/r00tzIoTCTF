@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <style>
+         body {
+         font-family: "Lato", sans-serif;
+         }
+         .sidenav {
+         height: 100%;
+         width: 0;
+         position: fixed;
+         z-index: 1;
+         top: 0;
+         left: 0;
+         background-color: #111;
+         overflow-x: hidden;
+         transition: 0.5s;
+         padding-top: 60px;
+         }
+         .sidenav a {
+         padding: 8px 8px 8px 32px;
+         text-decoration: none;
+         font-size: 25px;
+         color: #818181;
+         display: block;
+         transition: 0.3s;
+         }
+         .sidenav a:hover {
+         color: #f1f1f1;
+         }
+         .sidenav .closebtn {
+         position: absolute;
+         top: 0;
+         right: 25px;
+         font-size: 36px;
+         margin-left: 50px;
+         }
+         @media screen and (max-height: 450px) {
+         .sidenav {padding-top: 15px;}
+         .sidenav a {font-size: 18px;}
+         }
+      </style>
+   </head>
+   <body onload=loadState()>
+      <div id="mySidenav" class="sidenav">
+         <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+         <a href="/adminlog.html">Admin Log</a><br>
+         <a href="/">Logout</a><br>
+      </div>
+      <center>
+         <h2>r00tz Lighting Cloud Interface v1.0</h2>
+      </center>
+      <span style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776; Menu</span>
+      <center>
+         <table id="statusTable"></table>
+      </center>
+      <script>
+         function openNav() {
+           document.getElementById("mySidenav").style.width = "250px";
+         }
+         
+         function closeNav() {
+           document.getElementById("mySidenav").style.width = "0";
+         }
+         
+         function loadState() {
+           var xhttp = new XMLHttpRequest();
+           xhttp.onreadystatechange = function() {
+         	if (this.readyState == 4 && this.status == 200) {
+         		var state = JSON.parse(this.responseText);
+		
+         		for(var i=document.getElementById("statusTable").rows.length;i>0;i--) {
+         			document.getElementById("statusTable").deleteRow(i-1);
+         		}
+				console.log(state);
+				if (state["status"].length == 0){
+					var table = document.getElementById("statusTable");
+					var row = table.insertRow(0);
+					var c1 = row.insertCell(0);
+					c1.innerHTML = "You dont' seem to have any users, womp womp";
+				}else{
+						var rowid = 1;
+						var table = document.getElementById("statusTable");
+						var row = table.insertRow(0);
+						var c1 = row.insertCell(0);
+						var c2 = row.insertCell(1);
+						var c3 = row.insertCell(2);
+						var c4 = row.insertCell(3);
+						c2.innerHTML = "Home id";
+						c3.innerHTML = "Username";
+						c4.innerHTML = "Switch count";
+
+											
+						state["status"].forEach(function (arrayItem) {
+							var row = table.insertRow(1);
+							var c1 = row.insertCell(0);
+							c1.colSpan = "3";
+							c1.innerHTML="<table id='"+arrayItem[0]+"'></table>";
+													
+							var row = table.insertRow(1);
+							var c1 = row.insertCell(0);
+							var c2 = row.insertCell(1);
+							var c3 = row.insertCell(2);
+							var c4 = row.insertCell(3);
+							c1.innerHTML =  "<span style='font-size:30px;cursor:pointer' onclick='expandHome(\""+arrayItem[0]+"\");'>&#x2795;</span>";
+							c2.innerHTML =  arrayItem[0];
+							c3.innerHTML =  arrayItem[1];
+							c4.innerHTML =  arrayItem[2];
+												
+						rowid++;
+					});
+				}
+         	}
+           };
+           xhttp.open("POST", "/api/getHomes", true);
+           xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+           xhttp.send(JSON.stringify({"house_id":"{{ house_id }}"}));
+         }
+         
+         function expandHome(home_id) {
+         	var xhttp = new XMLHttpRequest();
+        	xhttp.open("POST", "/api/getSwitches");
+			xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				var state = JSON.parse(this.responseText);
+				var table  = document.getElementById(home_id);
+
+         		for(var i=table.rows.length;i>0;i--) {
+         			table.deleteRow(i-1);
+         		}
+				state["status"].forEach(function (arrayItem){
+					var row = table.insertRow(0);
+					var c1 = row.insertCell(0);
+					var c2 = row.insertCell(1);
+					var c3 = row.insertCell(2);
+					c1.innerHTML =  arrayItem[1];
+					if(arrayItem[2] == "ON"){
+						c3.innerHTML='<img id=\''+arrayItem[0]+'\' width="25%" height="25%" src="/images/switch-on.png">';
+						c2.innerHTML = "ON";
+						document.getElementById(arrayItem[0]).onclick = function() { switchOff(home_id,arrayItem[0]); };
+					}else{
+						c3.innerHTML='<img id=\''+arrayItem[0]+'\' width="25%" height="25%" src="/images/switch-off.png">';
+						c2.innerHTML = "OFF";
+						document.getElementById(arrayItem[0]).onclick = function() { switchOn(home_id,arrayItem[0]); };
+					}
+				});
+				}
+			}
+			xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+         	xhttp.send(JSON.stringify({"house_id":home_id}));
+		 }
+	  
+         function switchOff(home_id, switch_id) {
+         	var xhttp = new XMLHttpRequest();
+         	xhttp.open("POST", "/api/setStatus");
+			xhttp.onreadystatechange = function() {expandHome(home_id);};
+			xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+         	xhttp.send(JSON.stringify({"status":"OFF","house_id":home_id,"switch_id":switch_id}));
+         }
+         
+         function switchOn(home_id,switch_id) {
+         	var xhttp = new XMLHttpRequest();
+         	xhttp.open("POST", "/api/setStatus");
+			xhttp.onreadystatechange = function() {expandHome(home_id);};
+			xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+         	xhttp.send(JSON.stringify({"status":"ON","house_id":home_id,"switch_id":switch_id}));
+         }
+      </script>
+   </body>
+</html>

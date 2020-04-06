@@ -1,17 +1,6 @@
 <html>
    <head></head>
    <script>
-      function uuidv4() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-          var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-          return v.toString(16);
-        });
-      }
-      
-      function setuuid(){
-      	document.getElementById('hsed1').value = uuidv4();
-      }
-      
 	  function doregister() {
 		  var username = document.getElementById("user2").value;
 		  var confirmpass = document.getElementById("pass2r").value;
@@ -21,8 +10,8 @@
 			 xhttp.onreadystatechange = function() {
 			  if (this.readyState == 4 && this.status == 200) {
 				  var state = JSON.parse(this.responseText);
-				  console.log(state)
-				  if(state["result"] == "success"){
+				  console.log(state);
+				  if(state["status"] == "success"){
 					  document.location = "/";
 				  }else{
 					  alert("something went wrong!!");
@@ -33,7 +22,7 @@
 			 xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 			 xhttp.send(JSON.stringify({"username":document.getElementById("user2").value,
 									   "password":document.getElementById("pass2").value,
-									   "switch_id":document.getElementById("switch_id2").value,
+									   "switch_name":document.getElementById("switch_name").value,
 									   "first":document.getElementById("first").value,
 									   "last":document.getElementById("last").value,
 									   "phone":document.getElementById("phone").value,
@@ -71,7 +60,13 @@
    }
 	  
    </script>
-   <body onload="setuuid()">
+   <body>
+	   <center>
+		<img width="25%" height="25%" src="images/logo.png">
+	   <br>
+	   <br>
+	   </center>
+	   
       Hi! it looks like your switch has not yet been configured, we'll help you get started by entering your information below:
       <br>
       <br>
@@ -79,13 +74,15 @@
       <br>
       <center>
          <table>
-            <form>
+				<tr>
+				   <td>Switch Name:</td>
+				   <td><input type="text" id="switch_name" value="My First Switch"></td>
+				</tr>
+			   <tr>
+				  <td colspan=2><br></td>
+			   </tr>
                <tr>
                   <td colspan=2>Register your new switch with an existing account</td>
-               </tr>
-               <tr>
-                  <td>Switch ID:</td>
-                  <td><input type="text" id="switch_id1" value="{{ switchid }}"></td>
                </tr>
                <tr>
                   <td>Username:</td>
@@ -98,17 +95,11 @@
                <tr>
                   <td colspan=2 align="right"><input type="button" value="Register This Switch" onclick="registerSwitch"></td>
                </tr>
-            </form>
-			<form>
 				<tr>
 				   <td colspan=2><br></td>
 				</tr>
 				<tr>
 				   <td colspan=2>Register as a first time user:</td>
-				</tr>
-				<tr>
-				   <td>Switch ID:</td>
-				   <td><input type="text" id="switch_id2" value="{{ switchid }}"></td>
 				</tr>
 				<tr>
 				   <td>Username:</td>
@@ -149,7 +140,6 @@
 				<tr>
 				   <td colspan=2 align="right"><input onclick="doregister();" type="button" value="Register User"></td>
 				</tr>
-			 </form>
          </table>
       </center>
    </body>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <style>
+         {% autoescape false %}
+         {{ menustyle }}
+      </style>
+   </head>
+   <body >
+      <center>
+         <h2>{{ productname }}</h2>
+      </center>
+      {{ menuscript }}
+      {% endautoescape %}
+      <script>
+         function changepw() {
+			 if(document.getElementById('password').value != ""){
+				 if(document.getElementById('newpassword').value == document.getElementById('confpassword').value){
+				   var xhttp = new XMLHttpRequest();
+				   xhttp.onreadystatechange = function() {
+						if (this.readyState == 4 && this.status == 200) {
+							var res = JSON.parse(this.responseText);
+							if(res["result"] == "success"){
+								alert("password change compete!");
+								document.location = "/main.html";
+							}else{
+								alert("password change failed");
+							}
+					   };
+				   }
+				 xhttp.open("POST", "/api/chpasswd", true);
+				 xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+				 xhttp.send(JSON.stringify({"password":document.getElementById('password').value,  "newpassword":document.getElementById('newpassword').value}));
+				 }else{
+					 alert("newpassword and confirmation passwords don't match!");
+				 }
+			 }else{
+				 alert("must enter your password to change it");
+			 }
+         }
+      </script>
+      <center>
+         <table>
+            <tr>
+				<td>Old Password:</td>
+			   <td><input type="text" id="password"></td>
+            </tr>
+            <tr>
+				<td>New Password:</td>
+			   <td><input type="text" id="newpassword"></td>
+            </tr>
+            <tr>
+				<td>Confirm New Password:</td>
+			   <td><input type="text" id="confpassword"></td>
+            </tr>
+
+            <tr>
+               <td colspan="2"><input type="button" value="Change Password" onclick=changepw();></td>
+            </tr>
+         </table>
+      </center>
+   </body>
+   </head>

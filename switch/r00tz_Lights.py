@@ -7,7 +7,7 @@ import os
 import os.path as path
 from pathlib import Path
 import time
-import uuid
+#import uuid
 from update_switch_status import *
 app = Flask(__name__)
 
@@ -24,15 +24,16 @@ def force_login_if_needed():
 			else:
 				return redirect("/login.html")
 	else:
-		return redirect("/login.html")
+		return redirect("/register.html")
 	return False
 
 @app.context_processor
 def context_proc():
 	fsty = open(os.path.join("templatehtml","menustyle.txt"))
 	fscr = open(os.path.join("templatehtml","menuscript.txt"))
+	swn = getFile("r00tzSwitchName")
 	swid = getFile("r00tzSwitchID")
-	customstuff = {"switchid":swid,"menustyle":fsty.read(), "menuscript":fscr.read(), "productname":PRODUCTNAME}
+	customstuff = {"switchid":swid,"switch_name":swn,"menustyle":fsty.read(), "menuscript":fscr.read(), "productname":PRODUCTNAME}
 	fscr.close()
 	fsty.close()
 	
@@ -52,10 +53,9 @@ def dogetlog():
 	status = "failure"
 	if request.is_json:
 		content = request.get_json()
-	
-		print(content['log'])
 		f = open("logs/%s" % content['log'])
 		fc = f.read()
+		f.close()
 		return json.dumps({"status":status,"data":fc})
 	return json.dumps({"status":status})
 
@@ -70,22 +70,44 @@ def dologin():
 		if  content['username'] in userdata:
 			if  content['password'] == userdata[content['username']]:
 				session['loggedin'] = True
+				session['username'] = content['username']
 				status["result"] = "success"
-				logevent("user %s logged in" % content['username'])
+				logevent("user %s logged in" % session['username'])
 			else:
-				logevent("user %s failed login attempt" % content['username'])
+				logevent("user %s failed login attempt" % session['username'])
+		f.close()
 	return json.dumps(status)
 
+
+@app.route("/api/chpasswd",methods=['POST','GET'])
+def dochpasswd():
+	status = {"result":"fail"}
+	if request.is_json:
+		content = request.get_json()
+		with open('userdb.json') as f:
+			userdata = json.load(f)
+			f.close()
+			if  session['username'] in userdata:
+				if  content['password'] == userdata[session['username']]:
+					userdata[session['username']] = content['newpassword']
+#					f.seek(0)
+					f = open('userdb.json',"w")
+					f.write(json.dumps(userdata))
+					f.close()
+					status["result"] = "success"
+					logevent("user %s changed password" % session['username'])
+		f.close()
+	return json.dumps(status)
 
 @app.route("/backup",methods=['POST','GET'])
 def dobackupdownload():
 	with open('userdb.json') as f:
 		userdata = f.read()
+	f.close()
 	file_like_object = io.BytesIO()
 	zf = zipfile.ZipFile(file_like_object, mode="w", compression=zipfile.ZIP_DEFLATED)
 	zf.writestr("userdb.json",userdata)
 	zf.close()
-	print (file_like_object.getvalue())
 	return Response(file_like_object.getvalue(),mimetype="application/zip",headers={"Content-disposition":"attachment; filename=backup.zip"})
 
 
@@ -113,10 +135,13 @@ def doregister():
 			rapi = r00tsIOAAPI()
 			x = rapi.apiRegisterHouse(content["username"],  content["password"],  content["first"],  content["last"],  content["address"],  content["city"],  content["state"],  content["phone"])
 			if x["result"] == "success":
-				x = rapi.apiRegisterSwitch(content["switch_id"])
+				x = rapi.apiLogin(content["username"],content["password"]);
 				if x["result"] == "success":
-					touchFile("r00tzRegistered")
-			return x
+					touchFile("r00tzRegistered",x["house_id"])
+					x = rapi.apiRegisterSwitch(content["switch_name"])
+					if x["result"] == "success":
+						touchFile("r00tzSwitchID",x["switch_id"])
+						status="success"
 	return json.dumps({"status":status})
 
 
@@ -129,11 +154,12 @@ def doregisterSwitch():
 			rapi = r00tsIOAAPI()
 			x = rapi.apiLogin(content["username"],content["password"]);
 			if x["result"] == "success":
-				x = rapi.apiRegisterSwitch(content["switch_id"])
+				touchFile("r00tzRegistered",x["house_id"])
+				x = rapi.apiRegisterSwitch(content["switch_name"])
 				if x["result"] == "success":
-					touchFile("r00tzRegistered")
+					touchFile("r00tzSwitchID",x["switch_id"])
+					touchFile("r00tzSwitchName",x["switch_name"])
 					status="success"
-			return x
 	return json.dumps({"status":status})
 
 
@@ -154,11 +180,12 @@ def dorestore(): #FIXME not finished
 			return redirect(request.url)
 			
 		if file and allowed_file(file.filename):
-			filename = secure_filename(file.filename)
-			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-			return redirect(url_for('uploaded_file', filename=filename))
+			if file.filename.endswith("config.zip"): #vuln still
+				file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
+				return redirect(url_for('uploaded_file', filename=file.filename))
+			else:
+				return "filename is not config.zip, not a backup file"
 	return redirect(request.url)
-
 
 @app.route("/api/lights",methods=['POST','GET'])
 def dolights():
@@ -167,16 +194,16 @@ def dolights():
 	if request.method == 'POST':
 		if request.is_json:
 			content = request.get_json()
-			home = getFile("r00tzSwitchID")
+			home = getFile("r00tzRegistered")
+			switch = getFile("r00tzSwitchID")
 			rapi = r00tsIOAAPI(house_id=home)
-			print(content)
 			if content['state'] == "ON":
 				touchFile("r00tzSwitchOn")
 				logevent("turn light switch on!")
 			elif content['state'] == "OFF":
 				cleanFile("r00tzSwitchOn")
 				logevent("turn light switch off!")
-			rapi.apiSetStatus(home,content['state'])
+			rapi.apiSetStatus(switch,content['state'])
 	else:
 		status="success"
 	if(existsFile("r00tzSwitchOn")):
@@ -187,11 +214,19 @@ def dolights():
  
 def touchFile(file, contents=None):
 	f = open(os.path.join("configs", file),"w")
-	return json.dump(contents,f)
+	ret =  json.dump(contents,f)
+	f.close()
+	return ret;
 	
 def getFile(file):
-	f = open(os.path.join("configs", file))
-	return json.load(f)
+	if os.path.isfile(os.path.join("configs", file)):
+		f = open(os.path.join("configs", file))
+		ret =  json.load(f)
+		f.close()
+	else:
+		return ""
+	return ret
+	
 
 def cleanFile(file):
 	if existsFile(file):
@@ -214,10 +249,10 @@ def templatehtml(path):
 	if path.endswith("html"): #vuln
 		with open('templatehtml/%s' % path) as f:
 		   tpl = f.read()
+		f.close()
 		return render_template_string(tpl)
 	else:
 		return send_from_directory('templatehtml', path)
- 
 
 @app.route("/logout")
 def dologout():
@@ -230,12 +265,7 @@ def dologout():
 if __name__ == "__main__":
 	app.config['DEBUG'] = True
 	app.secret_key = "any random string" #;)
-	
 	Path("logs/switchlog.txt").touch()
-	if(not existsFile("r00tzSwitchID")):
-		touchFile("r00tzSwitchID",str(uuid.uuid4()))
-		logevent("created new switch uuid")
-
 	app.run()
 
 

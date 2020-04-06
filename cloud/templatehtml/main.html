@@ -73,7 +73,7 @@
          			document.getElementById("statusTable").deleteRow(i-1);
          		}
          		
-				if state["status"].length == 0{
+				if (state["status"].length == 0){
 					var table = document.getElementById("statusTable");
 					var row = table.insertRow(0);
 					var c1 = row.insertCell(0);
@@ -85,7 +85,7 @@
 						var c1 = row.insertCell(0);
 						var c2 = row.insertCell(1);
 						var c3 = row.insertCell(2);
-						c1.innerHTML =  arrayItem[0];
+						c1.innerHTML =  arrayItem[1];
 						if(arrayItem[1] == "ON"){
 							c3.innerHTML='<img id=switchLink src="/images/switch-on.png">';
 							c2.innerHTML = "ON";
