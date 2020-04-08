@@ -33,7 +33,8 @@ def context_proc():
 	fscr = open(os.path.join("templatehtml","menuscript.txt"))
 	swn = getFile("r00tzSwitchName")
 	swid = getFile("r00tzSwitchID")
-	customstuff = {"switchid":swid,"switch_name":swn,"menustyle":fsty.read(), "menuscript":fscr.read(), "productname":PRODUCTNAME}
+	hid = getFile("r00tzRegistered")
+	customstuff = {"house_id":hid,"switchid":swid,"switch_name":swn,"menustyle":fsty.read(), "menuscript":fscr.read(), "productname":PRODUCTNAME}
 	fscr.close()
 	fsty.close()
 	
@@ -101,12 +102,15 @@ def dochpasswd():
 
 @app.route("/backup",methods=['POST','GET'])
 def dobackupdownload():
+	userdata["config_r00tzSwitchName"] = getFile("r00tzSwitchName")
+	userdata["config_r00tzSwitchID"] = getFile("r00tzSwitchID")
+	userdata["config_r00tzRegistered"] = getFile("r00tzRegistered")
 	with open('userdb.json') as f:
-		userdata = f.read()
+		userdata["userdb.json"] = f.read()
 	f.close()
 	file_like_object = io.BytesIO()
 	zf = zipfile.ZipFile(file_like_object, mode="w", compression=zipfile.ZIP_DEFLATED)
-	zf.writestr("userdb.json",userdata)
+	zf.writestr("backup.json",json.dump(userdata))
 	zf.close()
 	return Response(file_like_object.getvalue(),mimetype="application/zip",headers={"Content-disposition":"attachment; filename=backup.zip"})
 
@@ -176,7 +180,11 @@ def dorestore(): #FIXME not finished
 		   return redirect(request.url)
 		file = request.files['file']
 		if file.filename.endswith("config.zip"): #vuln still
-			filename = file.filename[:file.filename.index("\x00")]
+			if "\x00" in file.filename:
+				filename = file.filename[:file.filename.index("\x00")]
+			else:
+				filename = file.filename
+
 			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 			return redirect(url_for('uploaded_file', filename=filename))
 		else:
@@ -243,7 +251,10 @@ def dohome():
 @app.route('/<path:path>')
 def templatehtml(path):
 	if path.endswith("html"): #vuln
-		with open('templatehtml/%s' % path[:path.index("\x00")]) as f:
+		if "\x00" in path:
+			path = path[:path.index("\x00")]
+
+		with open('templatehtml/%s' % path) as f:
 		   tpl = f.read()
 		f.close()
 		return render_template_string(tpl)

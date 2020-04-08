@@ -81,9 +81,9 @@ def dogetswitches():
 		c = conn.cursor()
 		content = request.get_json()
 		if "switch_id" in content:
-			c.execute("select switch_id, switch_name, status from switch_status where switch_id=%s" % content["switch_id"]) #sql injection
+			c.execute("select switch_id, switch_name, status from switch_status where switch_id='%s'" % content["switch_id"]) #sql injection
 		elif "house_id" in content:
-			c.execute("select switch_id, switch_name, status from switch_status where house_id=%s" % content["house_id"]) #sql injection
+			c.execute("select switch_id, switch_name, status from switch_status where house_id='%s'" % content["house_id"]) #sql injection
 		else:
 			c.execute("select switch_id, switch_name, status from switch_status;")
 		status = {"result":"success", "status":c.fetchall()}
@@ -219,7 +219,7 @@ def dologin():
 		c = conn.cursor()
 		content = request.get_json()
 		try:
-			c.execute("select password,house_id,admin from homes where username=%s; % "(content['username'],)) #injection
+			c.execute("select password,house_id,admin from homes where username='%s'; % "(content['username'],)) #injection
 			row = c.fetchone()
 			if  content['password'] == row[0]:
 				session['loggedin'] = True
