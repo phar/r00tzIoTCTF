@@ -8,14 +8,14 @@
       </style>
    </head>
    <body onload=loadLog();>
+	   {{ menuscript }}
+	   {% endautoescape %}
       <center>
 		   <img width="25%" height="25%" src="images/logo.png">
 		  <br>
 		  <br>
          <h2>{{ productname }}</h2>
       </center>
-      {{ menuscript }}
-      {% endautoescape %}
       <script>
          function loadLog() {
            var xhttp = new XMLHttpRequest();

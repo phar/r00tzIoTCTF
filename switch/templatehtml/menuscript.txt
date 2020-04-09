@@ -7,7 +7,7 @@
   <a href="/passwd.html">Change Device Password</a><br>
   <a href="/logview.html">View Log</a><br>
   <a href="/netcheck.html">Network Check</a><br>
-  <a href="http://r00tzIndustries.local">About</a><br>
+  <a href="/about.html">About</a><br>
   <a href="http://r00tzIndustries.local">r00tz Industries Homepage</a><br>
   <br>
   <a href="/logout">Logout</a><br>

@@ -132,10 +132,10 @@ def doregisterswitch():
 			(house_id, count) = c.fetchone()
 			switch_id = "-".join(house_id.split("-")[:-1] + ["%012d" % (count,)])
 
-			c.execute("insert into switch_status (switch_id,switch_name,house_id,status) values (?,?,?,?)" , (switchid,content["switch_name"], content["house_id"], "OFF"))
+			c.execute("insert into switch_status (switch_id,switch_name,house_id,status) values (?,?,?,?)" , (switch_id,content["switch_name"], content["house_id"], "OFF"))
 			conn.commit()
-			status = {"result":"success", "switch_id":switchid}
-			logevent(content["house_id"], "house_id %s is now registered" % (switchid))
+			status = {"result":"success", "switch_id":switch_id}
+			logevent(content["house_id"], "house_id %s is now registered" % (switch_id))
 		except:
 			conn.rollback()
 			status["error"] = "this switch already exists for this home"
@@ -218,24 +218,28 @@ def dologin():
 		conn = getdbconn()
 		c = conn.cursor()
 		content = request.get_json()
-		try:
-			c.execute("select password,house_id,admin from homes where username='%s'; % "(content['username'],)) #injection
-			row = c.fetchone()
-			if  content['password'] == row[0]:
-				session['loggedin'] = True
-				session['house_id'] = row[1]
-				session["admin"] = row[2]
-				if  row[2]:
-					logevent(row[1], "admin %s logged in")
-				else:
-					logevent(row[1], "user %s logged in")
-				status["admin"] = row[2]
-				status["house_id"] = session['house_id']
-				status["result"] = "success"
+#		try:
+		c.execute("select password,house_id,admin from homes where username='%s'; " % (content['username'],)) #injection
+		row = c.fetchone()
+		if  content['password'] == row[0]:
+			session['loggedin'] = True
+			session['house_id'] = row[1]
+			session["admin"] = row[2]
+			if  row[2]:
+				logevent(row[1], "admin %s logged in")
 			else:
-				logevent(row[1], "user %s  failed to logged in" % content['usernamne'])
-		except:
-			logevent(None, "error during login attempt")
+				logevent(row[1], "user %s logged in")
+				
+			status["admin"] = row[2]
+			status["house_id"] = session['house_id']
+			status["result"] = "success"
+#				print(status)
+		else:
+			status["error"] =  "user %s  failed to logged in" % content['usernamne']
+			logevent(row[1],status["error"])
+#		except:
+#			status["error"] ="error during login attempt"
+#			logevent(None, status["error"])
 	return json.dumps(status)
 
 	

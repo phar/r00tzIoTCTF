@@ -27,6 +27,7 @@ def force_login_if_needed():
 		return redirect("/register.html")
 	return False
 
+
 @app.context_processor
 def context_proc():
 	fsty = open(os.path.join("templatehtml","menustyle.txt"))
@@ -45,9 +46,11 @@ def logevent(eventstring):
 	f.write("%s\t%s\r\n" % (time.time(), eventstring))
 	f.close()
 
+
 @app.route("/images/<filename>")
 def dogetimages(filename):
 	return send_from_directory(directory='./images/', filename=filename)
+	
 
 @app.route("/logs",methods=['POST','GET'])
 def dogetlog():
@@ -60,12 +63,13 @@ def dogetlog():
 		return json.dumps({"status":status,"data":fc})
 	return json.dumps({"status":status})
 
+
 @app.route("/api/login",methods=['POST','GET'])
 def dologin():
 	status = {"result":"fail"}
 	if request.is_json:
 		content = request.get_json()
-		with open('userdb.json') as f:
+		with open(os.path.join('configs','userdb.json')) as f:
 			userdata = json.load(f)
 		
 		if  content['username'] in userdata:
@@ -92,7 +96,7 @@ def dochpasswd():
 				if  content['password'] == userdata[session['username']]:
 					userdata[session['username']] = content['newpassword']
 #					f.seek(0)
-					f = open('userdb.json',"w")
+					f = open(os.path.join('configs','userdb.json'),"w")
 					f.write(json.dumps(userdata))
 					f.close()
 					status["result"] = "success"
@@ -100,17 +104,19 @@ def dochpasswd():
 		f.close()
 	return json.dumps(status)
 
+
 @app.route("/backup",methods=['POST','GET'])
 def dobackupdownload():
-	userdata["config_r00tzSwitchName"] = getFile("r00tzSwitchName")
-	userdata["config_r00tzSwitchID"] = getFile("r00tzSwitchID")
-	userdata["config_r00tzRegistered"] = getFile("r00tzRegistered")
-	with open('userdb.json') as f:
-		userdata["userdb.json"] = f.read()
+	userdata = {}
+	userdata[os.path.join('configs',"r00tzSwitchName")] = getFile("r00tzSwitchName")
+	userdata[os.path.join('configs',"r00tzSwitchID")] = getFile("r00tzSwitchID")
+	userdata[os.path.join('configs',"r00tzRegistered")] = getFile("r00tzRegistered")
+	with open(os.path.join('configs','userdb.json')) as f:
+		userdata[os.path.join('configs',"userdb.json")] = f.read()
 	f.close()
 	file_like_object = io.BytesIO()
 	zf = zipfile.ZipFile(file_like_object, mode="w", compression=zipfile.ZIP_DEFLATED)
-	zf.writestr("backup.json",json.dump(userdata))
+	zf.writestr("backup.json",json.dumps(userdata))
 	zf.close()
 	return Response(file_like_object.getvalue(),mimetype="application/zip",headers={"Content-disposition":"attachment; filename=backup.zip"})
 
@@ -171,6 +177,7 @@ def doregisterSwitch():
 def factorydefault(): #FIXME not finished
 	status="failure"
 	#factory reset
+	
 
 @app.route("/restore",methods=['POST','GET'])
 def dorestore(): #FIXME not finished
@@ -190,6 +197,7 @@ def dorestore(): #FIXME not finished
 		else:
 			return "filename is not config.zip, not a backup file"
 	return redirect(request.url)
+
 
 @app.route("/api/lights",methods=['POST','GET'])
 def dolights():
@@ -215,12 +223,14 @@ def dolights():
 	else:
 		state = "OFF"
 	return json.dumps({"status":status,"state":state})
+	
  
 def touchFile(file, contents=None):
 	f = open(os.path.join("configs", file),"w")
 	ret =  json.dump(contents,f)
 	f.close()
 	return ret;
+	
 	
 def getFile(file):
 	if os.path.isfile(os.path.join("configs", file)):
@@ -235,9 +245,11 @@ def getFile(file):
 def cleanFile(file):
 	if existsFile(file):
 		os.remove(os.path.join("configs", file))
-
+		
+		
 def existsFile(file):
 	return path.isfile(os.path.join("configs", file))
+	
  
 @app.route("/")
 def dohome():
@@ -247,6 +259,7 @@ def dohome():
 	with open('templatehtml/main.html') as f:
 		tpl = f.read()
 	return render_template_string(tpl)
+	
 
 @app.route('/<path:path>')
 def templatehtml(path):
@@ -260,6 +273,7 @@ def templatehtml(path):
 		return render_template_string(tpl)
 	else:
 		return send_from_directory('templatehtml', path)
+		
 
 @app.route("/logout")
 def dologout():
