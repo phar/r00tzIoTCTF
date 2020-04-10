@@ -57,6 +57,7 @@ def dogetlog():
 	status = "failure"
 	if request.is_json:
 		content = request.get_json()
+#		print(content)
 		f = open(os.path.join("logs", content['log']))
 		fc = f.read()
 		f.close()
@@ -93,6 +94,7 @@ def dochpasswd():
 				touchFile("r00tzUserDB",userdata)
 				status["result"] = "success"
 				logevent("user %s changed password" % session['username'])
+		print(content)
 	return json.dumps(status)
 
 
@@ -175,11 +177,9 @@ def dorestore(): #FIXME not finished
 			filename = secure_filename(file.filename)
 			file.save(os.path.join("/tmp", filename))
 			zip_file = zipfile.ZipFile(os.path.join("/tmp", filename))
-			print(os.path.join("/tmp", filename))
-			print(zip_file)
-			for names in zip_file.namelist(): @;)
+			for names in zip_file.namelist():
 				f = open(names,"w")
-				f.write(zip_file.read(names)
+				f.write(zip_file.read(names))
 				f.close()
 	return redirect("/main.html")
 	

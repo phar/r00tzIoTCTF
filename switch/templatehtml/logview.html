@@ -28,7 +28,7 @@
            };
            xhttp.open("POST", "/logs", true);
            xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-           xhttp.send(JSON.stringify({"log":"/switchlog.txt"}));
+           xhttp.send(JSON.stringify({"log":"switchlog.txt"}));
            setTimeout(loadLog, 2000);
          }
       </script>

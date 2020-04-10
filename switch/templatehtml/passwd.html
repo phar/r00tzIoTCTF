@@ -8,11 +8,11 @@
       </style>
    </head>
    <body >
+	   {{ menuscript }}
+	   {% endautoescape %}
       <center>
          <h2>{{ productname }}</h2>
       </center>
-      {{ menuscript }}
-      {% endautoescape %}
       <script>
          function changepw() {
 			 if(document.getElementById('password').value != ""){
