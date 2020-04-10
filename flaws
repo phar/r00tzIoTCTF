@@ -1,6 +1,6 @@
 arbitrary command execution in ping count argument
 
-arbitrary file upload in config file restore, only checks that the file _endswith_ config.zip,(test that null works here)
+arbitrary file upload in config file restore, the file paths are used in the zip file which are not check on decompression allowing for arbitrary file writes, didnt like how unnatural %00 hack looked here, still preserved in the page templater
 
 poor or no session checking on many API calls
 
@@ -8,7 +8,7 @@ both client and server run in flask debug mode, written by the same developer, u
 
 no input validation on switch names, includeed in the admin interface log (XSS/XSRF)
 
-no input ggalidation on username, included in the admin view innerhtml (XSRF/XSS)
+no input vcalidation on username, included in the admin view innerhtml (XSRF/XSS)
 
 there is no session checking on the admin /view/ API, which will leak home_id's
 
@@ -30,3 +30,5 @@ file download... tested this and python now catches it with a "ValueError: embed
 blind sql injection on cloud login
 
 sql injection on getSwitchs, non-blind
+
+arbitrary file download from log viewer

@@ -7,10 +7,10 @@ import os
 import os.path as path
 from pathlib import Path
 import time
-#import uuid
 from update_switch_status import *
-app = Flask(__name__)
+from werkzeug.utils import secure_filename
 
+app = Flask(__name__)
 
 PRODUCTNAME  = "r00tz Lighting Switch Interface v1.0"
 
@@ -38,8 +38,8 @@ def context_proc():
 	customstuff = {"house_id":hid,"switchid":swid,"switch_name":swn,"menustyle":fsty.read(), "menuscript":fscr.read(), "productname":PRODUCTNAME}
 	fscr.close()
 	fsty.close()
-	
 	return {**session , **customstuff}
+	
 	
 def logevent(eventstring):
 	f  = open(os.path.join("logs","switchlog.txt"),"a")
@@ -57,7 +57,7 @@ def dogetlog():
 	status = "failure"
 	if request.is_json:
 		content = request.get_json()
-		f = open("logs/%s" % content['log'])
+		f = open(os.path.join("logs", content['log']))
 		fc = f.read()
 		f.close()
 		return json.dumps({"status":status,"data":fc})
@@ -69,9 +69,7 @@ def dologin():
 	status = {"result":"fail"}
 	if request.is_json:
 		content = request.get_json()
-		with open(os.path.join('configs','userdb.json')) as f:
-			userdata = json.load(f)
-		
+		userdata = getFile("r00tzUserDB")
 		if  content['username'] in userdata:
 			if  content['password'] == userdata[content['username']]:
 				session['loggedin'] = True
@@ -80,7 +78,6 @@ def dologin():
 				logevent("user %s logged in" % session['username'])
 			else:
 				logevent("user %s failed login attempt" % session['username'])
-		f.close()
 	return json.dumps(status)
 
 
@@ -89,36 +86,26 @@ def dochpasswd():
 	status = {"result":"fail"}
 	if request.is_json:
 		content = request.get_json()
-		with open('userdb.json') as f:
-			userdata = json.load(f)
-			f.close()
-			if  session['username'] in userdata:
-				if  content['password'] == userdata[session['username']]:
-					userdata[session['username']] = content['newpassword']
-#					f.seek(0)
-					f = open(os.path.join('configs','userdb.json'),"w")
-					f.write(json.dumps(userdata))
-					f.close()
-					status["result"] = "success"
-					logevent("user %s changed password" % session['username'])
-		f.close()
+		userdata = getFile("r00tzUserDB")
+		if  session['username'] in userdata:
+			if  content['password'] == userdata[session['username']]:
+				userdata[session['username']] = content['newpassword']
+				touchFile("r00tzUserDB",userdata)
+				status["result"] = "success"
+				logevent("user %s changed password" % session['username'])
 	return json.dumps(status)
 
 
 @app.route("/backup",methods=['POST','GET'])
 def dobackupdownload():
-	userdata = {}
-	userdata[os.path.join('configs',"r00tzSwitchName")] = getFile("r00tzSwitchName")
-	userdata[os.path.join('configs',"r00tzSwitchID")] = getFile("r00tzSwitchID")
-	userdata[os.path.join('configs',"r00tzRegistered")] = getFile("r00tzRegistered")
-	with open(os.path.join('configs','userdb.json')) as f:
-		userdata[os.path.join('configs',"userdb.json")] = f.read()
-	f.close()
 	file_like_object = io.BytesIO()
 	zf = zipfile.ZipFile(file_like_object, mode="w", compression=zipfile.ZIP_DEFLATED)
-	zf.writestr("backup.json",json.dumps(userdata))
+	zf.writestr(os.path.join("configs","r00tzUserDB"),json.dumps(getFile("r00tzUserDB")))
+	zf.writestr(os.path.join("configs","r00tzSwitchName"),json.dumps(getFile("r00tzSwitchName")))
+	zf.writestr(os.path.join("configs","r00tzSwitchID"),json.dumps(getFile("r00tzSwitchID")))
+	zf.writestr(os.path.join("configs","r00tzRegistered"),json.dumps(getFile("r00tzRegistered")))
 	zf.close()
-	return Response(file_like_object.getvalue(),mimetype="application/zip",headers={"Content-disposition":"attachment; filename=backup.zip"})
+	return Response(file_like_object.getvalue(),mimetype="application/zip",headers={"Content-disposition":"attachment; filename=backup.config"})
 
 
 @app.route("/api/netcheck",methods=['POST','GET'])
@@ -183,21 +170,19 @@ def factorydefault(): #FIXME not finished
 def dorestore(): #FIXME not finished
 	status="failure"
 	if request.method == 'POST':
-		if 'file' not in request.files:
-		   return redirect(request.url)
 		file = request.files['file']
-		if file.filename.endswith("config.zip"): #vuln still
-			if "\x00" in file.filename:
-				filename = file.filename[:file.filename.index("\x00")]
-			else:
-				filename = file.filename
-
-			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-			return redirect(url_for('uploaded_file', filename=filename))
-		else:
-			return "filename is not config.zip, not a backup file"
-	return redirect(request.url)
-
+		if file.filename.endswith(".config"):
+			filename = secure_filename(file.filename)
+			file.save(os.path.join("/tmp", filename))
+			zip_file = zipfile.ZipFile(os.path.join("/tmp", filename))
+			print(os.path.join("/tmp", filename))
+			print(zip_file)
+			for names in zip_file.namelist(): @;)
+				f = open(names,"w")
+				f.write(zip_file.read(names)
+				f.close()
+	return redirect("/main.html")
+	
 
 @app.route("/api/lights",methods=['POST','GET'])
 def dolights():
@@ -224,31 +209,6 @@ def dolights():
 		state = "OFF"
 	return json.dumps({"status":status,"state":state})
 	
- 
-def touchFile(file, contents=None):
-	f = open(os.path.join("configs", file),"w")
-	ret =  json.dump(contents,f)
-	f.close()
-	return ret;
-	
-	
-def getFile(file):
-	if os.path.isfile(os.path.join("configs", file)):
-		f = open(os.path.join("configs", file))
-		ret =  json.load(f)
-		f.close()
-	else:
-		return ""
-	return ret
-	
-
-def cleanFile(file):
-	if existsFile(file):
-		os.remove(os.path.join("configs", file))
-		
-		
-def existsFile(file):
-	return path.isfile(os.path.join("configs", file))
 	
  
 @app.route("/")
@@ -274,7 +234,7 @@ def templatehtml(path):
 	else:
 		return send_from_directory('templatehtml', path)
 		
-
+		
 @app.route("/logout")
 def dologout():
 	if session['loggedin'] == True:
@@ -286,7 +246,7 @@ def dologout():
 if __name__ == "__main__":
 	app.config['DEBUG'] = True
 	app.secret_key = "any random string" #;)
-	Path("logs/switchlog.txt").touch()
+	Path(os.path.join("logs","switchlog.txt")).touch()
 	app.run()
 
 
