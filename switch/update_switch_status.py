@@ -5,16 +5,7 @@ import os
 import os.path as path
 from pathlib import Path
 import json
-
-try:
-	import RPi.GPIO as GPIO
-	RPI_IOT_SWITCH_PIN  = 26
-	RPI_IOT_SWITCH_OFF_STATE = GPIO.HIGH
-	RPI_IOT_SWITCH_ON_STATE = GPIO.LOW
-	RPI_IOT_PIN_NUMBERING = GPIO.BCM
-except:
-	pass
-	
+from r00tzgpio import *
 
 def touchFile(file, contents=None):
 	f = open(os.path.join("configs", file),"w")
@@ -52,7 +43,7 @@ def touchLog(file):
 
 
 class r00tsIOAAPI():
-	def __init__(self, host="localhost", port=5001, house_id=None):
+	def __init__(self, host="localhost", port=5001, house_id=None, apicallupdate=lambda: None):
 		self.host = host
 		self.port = port
 		self.api_host_url = "http://%s:%d" % (self.host, self.port)
@@ -61,6 +52,7 @@ class r00tsIOAAPI():
 	def api_request(self, api, data):
 		ep = "%s/api/%s" % (self.api_host_url ,api)
 		r = requests.post(url = ep, json = data)
+		apicallupdate()
 		return r.json()
 
 	def apiLogin(self, username,password):
@@ -94,10 +86,12 @@ if __name__ == "__main__":
 	parser.add_argument('--get', action="store_true", )
 	parser.add_argument('--register_house', action="store_true", )
 	parser.add_argument('--register_switch', action="store_true", )
+	parser.add_argument('--buttons', action="store_true", )
 
 	results = parser.parse_known_args()[0]
 
-	rapi = r00tsIOAAPI()
+	gapi = r00tsIoTGPIO()
+	rapi = r00tsIOAAPI(apicallupdate=lambda:gapi.led_blink("cloudapi"))
 	
 	rapi.apiLogin(results.username,results.password);
 	if results.set:
@@ -118,15 +112,12 @@ if __name__ == "__main__":
 		
 		ret = rapi.apiGetStatus(sgresults.switch_id)
 		if sgresults.update:
-			try:
-				GPIO.setmode(RPI_IOT_PIN_NUMBERING)  # We are using the BCM pin numbering
-				GPIO.setup(RPI_IOT_SWITCH_PIN, GPIO.OUT)
-				if ret["state"] == "ON":
-					GPIO.output(RPI_IOT_SWITCH_PIN, RPI_IOT_SWITCH_ON_STATE)
-				else:
-					GPIO.output(RPI_IOT_SWITCH_PIN, RPI_IOT_SWITCH_OFF_STATE)
-			except:
-				print("well. we didnt set the RPI GPIO state, either we're not on an RPI, or the rpi gpio module doesnt exist, or i was to lazy to handle the specific error")
+			if ret["state"] == "ON":
+				rapi.led_on("relay_led")
+				rapi.relay_on()
+			else:
+				rapi.led_off("relay_led")
+				rapi.relay_off()
 		print(ret)
 
 	elif results.register_switch:
@@ -147,10 +138,25 @@ if __name__ == "__main__":
 		parser.add_argument('--apply', action="store_true")
 		sgresults = parser.parse_args()
 		ret = rapi.apiCheckUpdate()
-		#fixme download the image
-		#fixme unzip the image
-		#fixme exectue update.sh
+		if sgresults.apply:
+			#fixme download the image
+			#fixme unzip the image
+			#fixme exectue update.sh
 
+	elif results.buttons:
+		parser.add_argument('--apply', action="store_true")
+		sgresults = parser.parse_args()
+		ret = gapi.get_buttonsDict()
+		if sgresults.apply:
+			if ret['factory_reset'] == True:
+				print("factory reset")
+			if ret['button1'] == True:
+				print("i dont know what this button does yet")
+		else:
+			if ret['factory_reset'] == True:
+				print("factory reset, but not actually applied")
+			if ret['button1'] == True:
+				print("i still dont know what this button does yet")
 
 # python update_switch_status.py --home_id "Sdf34sdfsD"  --switch_id "bathroom lights" --register --username "foobar"  --password "password" --first "firsty" --last "lasty" --address "address" --city "city" --state="WA" --phone "92873492"
 #update_switch_status.py  --username "foobar"  --password "password"  --switch_id "bathroom lights" --get
