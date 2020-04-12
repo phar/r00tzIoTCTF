@@ -100,12 +100,15 @@ def dogetstatus():
 		content = request.get_json()
 		try:
 			if "switch_id" in content:
-				c.execute("select switch_name, status from switch_status where house_id=? and switch_id=?",(content["house_id"],content["switch_id"]))
+				c.execute("select switch_name, status from switch_status where house_id=? and switch_id=?;",(content["house_id"],content["switch_id"]))
+				print("select switch_name, status from switch_status where house_id=? and switch_id=?",(content["house_id"],content["switch_id"]))
 				logevent(content["house_id"], "house_id %s has requested status on switch %s" % (content["house_id"], content["switch_id"]))
+				status = {"result":"success", "status":c.fetchone()}
+				print(status)
 			else:
 				c.execute("select switch_id, switch_name, status from switch_status where house_id=?",(content["house_id"],))
-			status = {"result":"success", "status":c.fetchall()}
-			logevent(content["house_id"], "house_id %s has requested status" % (content["home_"]))
+				status = {"result":"success", "status":c.fetchall()}
+			logevent(content["house_id"], "house_id %s has requested status" % (content["house_id"]))
 		except:
 			status["error"] = "the resource could not be located"
 			logevent(None, "error from ip address XXXX making getStatus api query")
@@ -186,7 +189,7 @@ def dosetstatus():
 		#i should make this a sql ijection
 		try:
 			c.execute("update switch_status set status=? where house_id=? and switch_id=?" , (content["status"],  content["house_id"],content["switch_id"]))
-			print("update switch_status set status=? where house_id=? and switch_id=?" , (content["status"],  content["house_id"],content["switch_id"]))
+#			print("update switch_status set status=? where house_id=? and switch_id=?" , (content["status"],  content["house_id"],content["switch_id"]))
 			status = {"result":"success", "status":content["status"]}
 			conn.commit()
 			logevent(content["house_id"], "house_id %s has set status %s on switch %s" % (content["house_id"], content["status"], content["switch_id"]))
@@ -218,36 +221,41 @@ def dologin():
 		conn = getdbconn()
 		c = conn.cursor()
 		content = request.get_json()
-#		try:
-		c.execute("select password,house_id,admin from homes where username='%s'; " % (content['username'],)) #injection
-		row = c.fetchone()
-		if  content['password'] == row[0]:
-			session['loggedin'] = True
-			session['house_id'] = row[1]
-			session["admin"] = row[2]
-			if  row[2]:
-				logevent(row[1], "admin %s logged in")
+		try:
+			c.execute("select password,house_id,admin from homes where username='%s'; " % (content['username'],)) #injection
+			print(content)
+			row = c.fetchone()
+			if row is not None:
+				if  content['password'] == row[0]:
+					session['loggedin'] = True
+					session['house_id'] = row[1]
+					session["admin"] = row[2]
+					if  row[2]:
+						logevent(row[1], "admin %s logged in")
+					else:
+						logevent(row[1], "user %s logged in")
+						
+					status["admin"] = row[2]
+					status["house_id"] = session['house_id']
+					status["result"] = "success"
+
+				else:
+					status["error"] =  "user %s  failed to logged in" % content['usernamne']
+					logevent(row[1],status["error"])
 			else:
-				logevent(row[1], "user %s logged in")
-				
-			status["admin"] = row[2]
-			status["house_id"] = session['house_id']
-			status["result"] = "success"
-#				print(status)
-		else:
-			status["error"] =  "user %s  failed to logged in" % content['usernamne']
-			logevent(row[1],status["error"])
-#		except:
-#			status["error"] ="error during login attempt"
-#			logevent(None, status["error"])
+				status["error"] =  "user is not found .. probably"
+				logevent(None,status["error"])
+		except:
+			status["error"] ="error during login attempt"
+			logevent(None, status["error"])
 	return json.dumps(status)
 
 	
 def logevent(house_id, eventstring):
 	conn = getdbconn()
 	c = conn.cursor()
-	c.execute("insert into logs (ts, house_id,logmsg) values (?,?,?);", (time.time(), house_id,eventstring))
-	conn.commit()
+#	c.execute("insert into logs (ts, house_id,logmsg) values (?,?,?);", (time.time(), house_id,eventstring))
+#	conn.commit()
 
 
 def buildDB(conn):

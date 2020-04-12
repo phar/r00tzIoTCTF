@@ -131,7 +131,7 @@ def doregister():
 	if request.method == 'POST':
 		if request.is_json:
 			content = request.get_json()
-			rapi = r00tsIOAAPI()
+			rapi = r00tsIOTAPI()
 			x = rapi.apiRegisterHouse(content["username"],  content["password"],  content["first"],  content["last"],  content["address"],  content["city"],  content["state"],  content["phone"])
 			if x["result"] == "success":
 				x = rapi.apiLogin(content["username"],content["password"]);
@@ -150,7 +150,7 @@ def doregisterSwitch():
 	if request.method == 'POST':
 		if request.is_json:
 			content = request.get_json()
-			rapi = r00tsIOAAPI()
+			rapi = r00tsIOTAPI()
 			x = rapi.apiLogin(content["username"],content["password"]);
 			if x["result"] == "success":
 				touchFile("r00tzRegistered",x["house_id"])
@@ -193,7 +193,7 @@ def dolights():
 			content = request.get_json()
 			home = getFile("r00tzRegistered")
 			switch = getFile("r00tzSwitchID")
-			rapi = r00tsIOAAPI(house_id=home)
+			rapi = r00tsIOTAPI(house_id=home)
 			if content['state'] == "ON":
 				touchFile("r00tzSwitchOn")
 				logevent("turn light switch on!")

@@ -42,22 +42,24 @@ def touchLog(file):
 	f.close()
 
 
-class r00tsIOAAPI():
+class r00tsIOTAPI():
 	def __init__(self, host="localhost", port=5001, house_id=None, apicallupdate=lambda: None):
 		self.host = host
 		self.port = port
+		self.apicallupdate = apicallupdate
 		self.api_host_url = "http://%s:%d" % (self.host, self.port)
 		self.house_id = house_id
 
 	def api_request(self, api, data):
 		ep = "%s/api/%s" % (self.api_host_url ,api)
 		r = requests.post(url = ep, json = data)
-		apicallupdate()
+		self.apicallupdate()
 		return r.json()
 
 	def apiLogin(self, username,password):
 		ret  = self.api_request("login", {"username":username,"password":password})
-		self.house_id = ret["house_id"]
+		if "house_id" in ret:
+			self.house_id = ret["house_id"]
 		return ret
 		
 	def apiSetStatus(self, switch_id, status):
@@ -87,13 +89,23 @@ if __name__ == "__main__":
 	parser.add_argument('--register_house', action="store_true", )
 	parser.add_argument('--register_switch', action="store_true", )
 	parser.add_argument('--buttons', action="store_true", )
+	parser.add_argument('--update', action="store_true", )
+	parser.add_argument('--home_id', action="store", )
 
 	results = parser.parse_known_args()[0]
 
 	gapi = r00tsIoTGPIO()
-	rapi = r00tsIOAAPI(apicallupdate=lambda:gapi.led_blink("cloudapi"))
-	
-	rapi.apiLogin(results.username,results.password);
+#	rapi = r00tsIOTAPI()
+
+
+	if results.home_id:
+		rapi = r00tsIOTAPI(house_id=results.home_id, apicallupdate=lambda:gapi.led_blink("cloudapi"))
+#		r = rapi.apiLogin(home_id=results.home_id);
+	else:
+		rapi = r00tsIOTAPI(apicallupdate=lambda:gapi.led_blink("cloudapi"))
+		r = rapi.apiLogin(results.username,results.password);
+#	print(r)
+
 	if results.set:
 		parser.add_argument('--switch_id', action="store")
 		parser.add_argument('--state', action="store", type=int)
@@ -111,13 +123,15 @@ if __name__ == "__main__":
 		sgresults = parser.parse_args()
 		
 		ret = rapi.apiGetStatus(sgresults.switch_id)
-		if sgresults.update:
-			if ret["state"] == "ON":
-				rapi.led_on("relay_led")
-				rapi.relay_on()
+		print(ret)
+		if sgresults.updatestatus:
+#			print(ret["status"][0])
+			if ret["status"][1] == "ON":
+				gapi.led_on("relay_led")
+				gapi.relay_on()
 			else:
-				rapi.led_off("relay_led")
-				rapi.relay_off()
+				gapi.led_off("relay_led")
+				gapi.relay_off()
 		print(ret)
 
 	elif results.register_switch:
@@ -139,6 +153,7 @@ if __name__ == "__main__":
 		sgresults = parser.parse_args()
 		ret = rapi.apiCheckUpdate()
 		if sgresults.apply:
+			pass
 			#fixme download the image
 			#fixme unzip the image
 			#fixme exectue update.sh
@@ -158,8 +173,3 @@ if __name__ == "__main__":
 			if ret['button1'] == True:
 				print("i still dont know what this button does yet")
 
-# python update_switch_status.py --home_id "Sdf34sdfsD"  --switch_id "bathroom lights" --register --username "foobar"  --password "password" --first "firsty" --last "lasty" --address "address" --city "city" --state="WA" --phone "92873492"
-#update_switch_status.py  --username "foobar"  --password "password"  --switch_id "bathroom lights" --get
-#update_switch_status.py --username "foobar"  --password "password"   --switch_id "bathroom lights" --set --state 0
-#update_switch_status.py  --username "foobar"  --password "password"  --switch_id "bathroom lights" --set --state 1
-#update_switch_status.py  --username "foobar"  --password "password"  --switch_id "bathroom lights" --registerSwitch
