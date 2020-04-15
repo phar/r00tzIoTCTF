@@ -1,8 +1,7 @@
 import random
 import time
 #B+ or zero
-import syslog
-
+from util import *
 
 STATUS_LED_0_PIN  = 6
 STATUS_LED_1_PIN  = 13
@@ -32,10 +31,10 @@ try:
 	BUTTON_RELEASED_STATE = 1
 
 	class r00tsIoTGPIO():
-		def __init__(self):
+		def __init__(self, logfunc=lambda: None):
 			self.leds = LEDMAP
 			self.buttons =BUTTONMAP
-
+			self.logger = logfunc
 			GPIO.setmode(GPIO.BCM)
 			GPIO.setwarnings(False)
 
@@ -72,9 +71,11 @@ try:
 				self.led_off(led)
 
 		def led_on(self,led):
+			self.logger("led %s on" % led)
 			GPIO.output(self.leds[led], LED_ON_STATE)
 
 		def led_off(self,led):
+			self.logger("led %s on" % led)
 			GPIO.output(self.leds[led], LED_OFF_STATE)
 
 		def relay_state(self,state):
@@ -84,9 +85,13 @@ try:
 				self.relay_off(led)
 				
 		def relay_on(self):
+			touchFile("r00tzSwitchOn")
+			self.logger("relay on")
 			GPIO.output(self.leds[led], RELAY_ON_STATE)
 			
 		def relay_off(self):
+			cleanFile("r00tzSwitchOn")
+			self.logger("relay off")
 			GPIO.output(self.leds[led], RELAY_OFF_STATE)
 
 		def led_blink (self,led, duration=.05):
@@ -104,9 +109,10 @@ except:
 	BUTTON_RELEASED_STATE = 1
 
 	class r00tsIoTGPIO():
-		def __init__(self):
+		def __init__(self, logfunc=lambda x: None):
 			self.leds = LEDMAP
 			self.buttons = BUTTONMAP
+			self.logger = logfunc
 
 		def get_buttons(self):
 				buttons = []
@@ -125,26 +131,28 @@ except:
 			
 		def led_on(self,led):
 			print("led %s on" % led)
-			syslog.syslog("led %s on" % led)
+			self.logger("led %s on" % led)
 
 		def led_off(self,led):
 			print("led %s off" % led)
-			syslog.syslog("led %s off" % led)
+			self.logger("led %s off" % led)
 
 		def relay_on(self):
 			print("relay on")
-			syslog.syslog("relay on")
+			touchFile("r00tzSwitchOn")
+			self.logger("relay on")
 
 		def relay_off(self):
 			print("relay off")
-			syslog.syslog("relay off")
+			cleanFile("r00tzSwitchOn")
+			self.logger("relay off")
 			
 		def relay_state(self,state):
 			pass
 
 		def led_blink(self,led, duration=.05):
-			print("led %s blink with duration %f" % (led,duration))
-			syslog.syslog("led %s blink with duration %f" % (led,duration))
+			self.logger("led %s blink with duration %f" % (led,duration))
+			self.print("led %s blink with duration %f" % (led,duration))
 
 
 if __name__ == "__main__":

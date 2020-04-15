@@ -6,53 +6,25 @@ import os.path as path
 from pathlib import Path
 import json
 from r00tzgpio import *
-
-def touchFile(file, contents=None):
-	f = open(os.path.join("configs", file),"w")
-	ret =  json.dump(contents,f)
-	f.close()
-	return ret;
-	
-	
-def getFile(file):
-	if os.path.isfile(os.path.join("configs", file)):
-		f = open(os.path.join("configs", file))
-		ret =  json.load(f)
-		f.close()
-	else:
-		return ""
-	return ret
-	
-
-def cleanFile(file):
-	if existsFile(file):
-		os.remove(os.path.join("configs", file))
-		
-		
-def existsFile(file):
-	return path.isfile(os.path.join("configs", file))
+from util import *
 
 
-def cleanLog(file):
-	if existsFile(file):
-		os.remove(os.path.join("logs", file))
-
-def touchLog(file):
-	f = open(os.path.join("logs", file),"w")
-	f.close()
-
+USE_TLS = False
 
 class r00tsIOTAPI():
 	def __init__(self, host="localhost", port=5001, house_id=None, apicallupdate=lambda: None):
 		self.host = host
 		self.port = port
 		self.apicallupdate = apicallupdate
-		self.api_host_url = "http://%s:%d" % (self.host, self.port)
+		if USE_TLS:
+			self.api_host_url = "https://%s:%d" % (self.host, self.port)
+		else:
+			self.api_host_url = "http://%s:%d" % (self.host, self.port)
 		self.house_id = house_id
 
 	def api_request(self, api, data):
 		ep = "%s/api/%s" % (self.api_host_url ,api)
-		r = requests.post(url = ep, json = data)
+		r = requests.post(url = ep, json = data, verify=False)
 		self.apicallupdate()
 		return r.json()
 

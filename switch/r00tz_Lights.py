@@ -8,6 +8,7 @@ import os.path as path
 from pathlib import Path
 import time
 from update_switch_status import *
+from util import *
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
@@ -131,7 +132,8 @@ def doregister():
 	if request.method == 'POST':
 		if request.is_json:
 			content = request.get_json()
-			rapi = r00tsIOTAPI()
+			gapi = r00tsIoTGPIO(logfunc=logevent)
+			rapi = r00tsIOTAPI(apicallupdate=lambda:gapi.led_blink("cloudapi"))
 			x = rapi.apiRegisterHouse(content["username"],  content["password"],  content["first"],  content["last"],  content["address"],  content["city"],  content["state"],  content["phone"])
 			if x["result"] == "success":
 				x = rapi.apiLogin(content["username"],content["password"]);
@@ -150,7 +152,8 @@ def doregisterSwitch():
 	if request.method == 'POST':
 		if request.is_json:
 			content = request.get_json()
-			rapi = r00tsIOTAPI()
+			gapi = r00tsIoTGPIO(logfunc=logevent)
+			rapi = r00tsIOTAPI(apicallupdate=lambda:gapi.led_blink("cloudapi"))
 			x = rapi.apiLogin(content["username"],content["password"]);
 			if x["result"] == "success":
 				touchFile("r00tzRegistered",x["house_id"])
@@ -193,13 +196,12 @@ def dolights():
 			content = request.get_json()
 			home = getFile("r00tzRegistered")
 			switch = getFile("r00tzSwitchID")
-			rapi = r00tsIOTAPI(house_id=home)
+			gapi = r00tsIoTGPIO(logfunc=logevent)
+			rapi = r00tsIOTAPI(house_id=home,apicallupdate=lambda:gapi.led_blink("cloudapi"))
 			if content['state'] == "ON":
-				touchFile("r00tzSwitchOn")
-				logevent("turn light switch on!")
+				gapi.relay_on()
 			elif content['state'] == "OFF":
-				cleanFile("r00tzSwitchOn")
-				logevent("turn light switch off!")
+				gapi.relay_off()
 			rapi.apiSetStatus(switch,content['state'])
 	else:
 		status="success"
