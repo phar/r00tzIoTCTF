@@ -9,10 +9,7 @@ http://localhost:5001	iot switch vendor website
 #TODO create r00tzLights_1.0_fw.img file on the could server
 
 TODO: more logging
-
+TODO need a daemon to actually watch the switch gpio button
 TODO debug
-
-TODO cloud page javascript is broken
-
 TODO admin log view - still borken
-TODO make back end api calls over tls connection, do not check certs
+TODO firmware update unzip and execute

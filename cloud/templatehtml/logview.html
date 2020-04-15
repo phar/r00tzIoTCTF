@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <style>
+         body {
+         font-family: "Lato", sans-serif;
+         }
+         .sidenav {
+         height: 100%;
+         width: 0;
+         position: fixed;
+         z-index: 1;
+         top: 0;
+         left: 0;
+         background-color: #111;
+         overflow-x: hidden;
+         transition: 0.5s;
+         padding-top: 60px;
+         }
+         .sidenav a {
+         padding: 8px 8px 8px 32px;
+         text-decoration: none;
+         font-size: 25px;
+         color: #818181;
+         display: block;
+         transition: 0.3s;
+         }
+         .sidenav a:hover {
+         color: #f1f1f1;
+         }
+         .sidenav .closebtn {
+         position: absolute;
+         top: 0;
+         right: 25px;
+         font-size: 36px;
+         margin-left: 50px;
+         }
+         @media screen and (max-height: 450px) {
+         .sidenav {padding-top: 15px;}
+         .sidenav a {font-size: 18px;}
+         }
+      </style>
+   </head>
+   <body onload=loadState()>
+      <div id="mySidenav" class="sidenav">
+         <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+         <a href="/cloud/admin.html">Main</a><br>
+         <a href="/cloud/logview.html">Admin Log</a><br>
+         <a href="/">Logout</a><br>
+      </div>
+      <span style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776; Menu</span>
+      <center>
+         <h2>r00tz Lighting Cloud Interface v1.0</h2>
+      </center>
+      <center>
+         <table id="statusTable"></table>
+      </center>
+      <script>
+         function openNav() {
+           document.getElementById("mySidenav").style.width = "250px";
+         }
+         
+         function closeNav() {
+           document.getElementById("mySidenav").style.width = "0";
+         }
+         
+         function loadState() {
+           var xhttp = new XMLHttpRequest();
+           xhttp.onreadystatechange = function() {
+         	if (this.readyState == 4 && this.status == 200) {
+         		var state = JSON.parse(this.responseText);
+		
+         		for(var i=document.getElementById("statusTable").rows.length;i>0;i--) {
+         			document.getElementById("statusTable").deleteRow(i-1);
+         		}
+				console.log(state);
+				if (state["status"].length == 0){
+					var table = document.getElementById("statusTable");
+					var row = table.insertRow(0);
+					var c1 = row.insertCell(0);
+					c1.innerHTML = "You dont' seem to have any log messages to display, womp womp";
+				}else{
+						var rowid = 1;
+						var table = document.getElementById("statusTable");
+						var row = table.insertRow(0);
+						var c1 = row.insertCell(0);
+						var c2 = row.insertCell(1);
+						var c3 = row.insertCell(2);
+						c1.innerHTML = "Timestamp";
+						c2.innerHTML = "home_id";
+						c3.innerHTML = "Log Message";
+
+											
+						state["status"].forEach(function (arrayItem) {
+													
+							var row = table.insertRow(1);
+							var c1 = row.insertCell(0);
+							var c2 = row.insertCell(1);
+							var c3 = row.insertCell(2);
+							c1.innerHTML =  arrayItem[1];
+							c2.innerHTML =  arrayItem[2];
+							c3.innerHTML =  arrayItem[3];
+												
+						rowid++;
+					});
+				}
+         	}
+           };
+           xhttp.open("POST", "/api/getLogs", true);
+           xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+           xhttp.send(JSON.stringify({"timestamp":Date.now() - (60 * 10)}));//fixme, hardcoded to 10 minutes
+		   setTimeout(loadState, 2000);
+			 
+		 }
+      </script>
+   </body>
+</html>
