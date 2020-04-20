@@ -33,7 +33,7 @@ sudo cp uwsgi.service /etc/systemd/system
 sudo systemctl enable uwsgi.service
 sudo apt-get install avahi-daemon
 
-
+pip install python-daemon #new
 
 #zero free image
 #unmount image

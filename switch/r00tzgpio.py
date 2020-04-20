@@ -1,7 +1,6 @@
 import random
 import time
 #B+ or zero
-from util import *
 
 STATUS_LED_0_PIN  = 6
 STATUS_LED_1_PIN  = 13
@@ -31,18 +30,29 @@ try:
 	BUTTON_RELEASED_STATE = 1
 
 	class r00tsIoTGPIO():
-		def __init__(self, logfunc=lambda: None):
+		def __init__(self, switchpress=lambda: None,resetpress=lambda: None, logfunc=lambda: None):
 			self.leds = LEDMAP
 			self.buttons =BUTTONMAP
 			self.logger = logfunc
+			self.switchpress = switchpress
 			GPIO.setmode(GPIO.BCM)
 			GPIO.setwarnings(False)
-
+		
 			for n,l in self.leds.items():
 				GPIO.setup(l, GPIO.OUT)
+				
 			for n,b in self.buttons.items():
 				GPIO.setup(b, GPIO.IN)
+				
 			GPIO.setup(IOT_SWITCH_PIN, GPIO.OUT)
+			
+			if BUTTON_PRESSED_STATE = 0:
+				GPIO.add_event_detect(INPUT_BUTTON_0_PIN, GPIO.FALLING, callback = self.switchpress, bouncetime = 100)
+				GPIO.add_event_detect(INPUT_BUTTON_1_PIN, GPIO.FALLING, callback = self.resetpress, bouncetime = 100)
+			elif:
+				GPIO.add_event_detect(INPUT_BUTTON_0_PIN, GPIO.RISING, callback = self.switchpress, bouncetime = 100)
+				GPIO.add_event_detect(INPUT_BUTTON_1_PIN, GPIO.RISING, callback = self.resetpress, bouncetime = 100)
+
 
 		def get_buttons(self):
 			buttons = []
@@ -85,12 +95,10 @@ try:
 				self.relay_off(led)
 				
 		def relay_on(self):
-			touchFile("r00tzSwitchOn")
 			self.logger("relay on")
 			GPIO.output(self.leds[led], RELAY_ON_STATE)
 			
 		def relay_off(self):
-			cleanFile("r00tzSwitchOn")
 			self.logger("relay off")
 			GPIO.output(self.leds[led], RELAY_OFF_STATE)
 
@@ -109,10 +117,12 @@ except:
 	BUTTON_RELEASED_STATE = 1
 
 	class r00tsIoTGPIO():
-		def __init__(self, logfunc=lambda x: None):
+		def __init__(self,  switchpress=lambda: None,resetpress=lambda: None,logfunc=lambda x: None):
 			self.leds = LEDMAP
 			self.buttons = BUTTONMAP
 			self.logger = logfunc
+			self.switchpress = switchpress
+			self.resetpress = resetpress
 
 		def get_buttons(self):
 				buttons = []
@@ -139,12 +149,10 @@ except:
 
 		def relay_on(self):
 			print("relay on")
-			touchFile("r00tzSwitchOn")
 			self.logger("relay on")
 
 		def relay_off(self):
 			print("relay off")
-			cleanFile("r00tzSwitchOn")
 			self.logger("relay off")
 			
 		def relay_state(self,state):

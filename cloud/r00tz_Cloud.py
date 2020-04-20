@@ -73,18 +73,6 @@ def dogethomes():
 		return json.dumps(status)
 
 
-@app.route("/api/getLogs", methods=['POST'])
-def dogetlogs():
-	status = {"result":"fail"}
-	if request.is_json:
-		conn = getdbconn()
-		c = conn.cursor()
-		content = request.get_json()
-		c.execute("select * from logs where ts > %s limit 20 order by ts desc" %  content["timestamp"] )
-		status = {"result":"success", "status":c.fetchall()}
-		return json.dumps(status)
-
-
 @app.route("/api/getSwitches", methods=['POST'])
 def dogetswitches():
 	status = {"result":"fail"}
@@ -243,9 +231,9 @@ def dologin():
 					session['house_id'] = row[1]
 					session["admin"] = row[2]
 					if  row[2]:
-						logevent(row[1], "admin %s logged in" % row[2])
+						logevent(row[1], "admin %s logged in")
 					else:
-						logevent(row[1], "user %s logged in" % row[2])
+						logevent(row[1], "user %s logged in")
 						
 					status["admin"] = row[2]
 					status["house_id"] = session['house_id']
@@ -266,8 +254,8 @@ def dologin():
 def logevent(house_id, eventstring):
 	conn = getdbconn()
 	c = conn.cursor()
-	c.execute("insert into logs (ts, house_id,logmsg) values (?,?,?);", (time.time(), house_id,eventstring))
-	conn.commit()
+#	c.execute("insert into logs (ts, house_id,logmsg) values (?,?,?);", (time.time(), house_id,eventstring))
+#	conn.commit()
 
 
 def buildDB(conn):
@@ -288,3 +276,4 @@ if __name__ == "__main__":
 	app.run(port=5001)
 
     
+

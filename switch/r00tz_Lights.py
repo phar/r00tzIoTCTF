@@ -199,9 +199,9 @@ def dolights():
 			gapi = r00tsIoTGPIO(logfunc=logevent)
 			rapi = r00tsIOTAPI(house_id=home,apicallupdate=lambda:gapi.led_blink("cloudapi"))
 			if content['state'] == "ON":
-				gapi.relay_on()
+				touchFile("r00tzSwitchOn")
 			elif content['state'] == "OFF":
-				gapi.relay_off()
+				clearFile("r00tzSwitchOn")
 			rapi.apiSetStatus(switch,content['state'])
 	else:
 		status="success"
