@@ -130,12 +130,13 @@
          			table.deleteRow(i-1);
          		}
 				state["status"].forEach(function (arrayItem){
+					var state = JSON.parse(arrayItem[3]);
 					var row = table.insertRow(0);
 					var c1 = row.insertCell(0);
 					var c2 = row.insertCell(1);
 					var c3 = row.insertCell(2);
 					c1.innerHTML =  arrayItem[1];
-					if(arrayItem[2] == "ON"){
+					if(state["basicstate"] == "ON"){
 						c3.innerHTML='<img id=\''+arrayItem[0]+'\' width="25%" height="25%" src="/images/switch-on.png">';
 						c2.innerHTML = "ON";
 						document.getElementById(arrayItem[0]).onclick = function() { switchOff(home_id,arrayItem[0]); };

@@ -30,7 +30,7 @@
          	var xhttp = new XMLHttpRequest();
          	xhttp.open("POST", "/api/lights");
          	xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-         	xhttp.send(JSON.stringify({"state":"OFF"}));
+         	xhttp.send(JSON.stringify({"basicstate":"OFF"}));
          	
          }
          
@@ -38,15 +38,22 @@
          	var xhttp = new XMLHttpRequest();
          	xhttp.open("POST", "/api/lights");
          	xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-         	xhttp.send(JSON.stringify({"state":"ON"}));
+         	xhttp.send(JSON.stringify({"basicstate":"ON"}));
          }
          
-         function loadState() {
+         function switchOnColor(red,green,blue) {
+         	var xhttp = new XMLHttpRequest();
+         	xhttp.open("POST", "/api/lights");
+         	xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+         	xhttp.send(JSON.stringify({"basicstate":"ON","channelred":red,"channelgreen":green,"channelblue":blue}));
+         }
+
+		 function loadState() {
            var xhttp = new XMLHttpRequest();
            xhttp.onreadystatechange = function() {
          	if (this.readyState == 4 && this.status == 200) {
          		var state = JSON.parse(this.responseText);
-         		if(state['state'] == "ON"){
+         		if(state['basicstate'] == "ON"){
          			document.getElementById('switchImg').src='../images/switch-on.png';
          			document.getElementById('switchText').innerHTML = "ON";
          			document.getElementById('switchLink').onclick = switchOff;

@@ -134,12 +134,13 @@ def doregister():
 			content = request.get_json()
 			gapi = r00tsIoTGPIO(logfunc=logevent)
 			rapi = r00tsIOTAPI(apicallupdate=lambda:gapi.led_blink("cloudapi"))
-			x = rapi.apiRegisterHouse(content["username"],  content["password"],  content["first"],  content["last"],  content["address"],  content["city"],  content["state"],  content["phone"])
+			x = rapi.apiRegisterHouse(content["username"],  content["password"], content["first"],  content["last"],  content["address"],  content["city"],  content["state"],  content["phone"])
 			if x["result"] == "success":
 				x = rapi.apiLogin(content["username"],content["password"]);
 				if x["result"] == "success":
 					touchFile("r00tzRegistered",x["house_id"])
-					x = rapi.apiRegisterSwitch(content["switch_name"])
+					x = rapi.apiRegisterSwitch(getFile("r00tzSwitchType"), content["switch_name"])
+					print(x)
 					if x["result"] == "success":
 						touchFile("r00tzSwitchID",x["switch_id"])
 						status="success"
@@ -191,6 +192,9 @@ def dorestore(): #FIXME not finished
 def dolights():
 	#no login here
 	status="failure"
+	red = None
+	green = None
+	blue = None
 	if request.method == 'POST':
 		if request.is_json:
 			content = request.get_json()
@@ -198,18 +202,39 @@ def dolights():
 			switch = getFile("r00tzSwitchID")
 			gapi = r00tsIoTGPIO(logfunc=logevent)
 			rapi = r00tsIOTAPI(house_id=home,apicallupdate=lambda:gapi.led_blink("cloudapi"))
-			if content['state'] == "ON":
-				touchFile("r00tzSwitchOn")
-			elif content['state'] == "OFF":
-				clearFile("r00tzSwitchOn")
-			rapi.apiSetStatus(switch,content['state'])
+			if content['basicstate'] == "ON":
+				if "red" in content:
+					red = content['red']
+				else:
+					red = 255
+				if "green" in content:
+					green = content['green']
+				else:
+					green = 255
+				if "blue" in content:
+					blue = content['blue']
+				else:
+					blue = 255
+				touchFile("r00tzSwitchOn",{"channelred":red,"channelgreen":green,"channelblue":blue})
+			elif content['basicstate'] == "OFF":
+				cleanFile("r00tzSwitchOn")
+			rapi.apiSetStatus(switch,content['basicstate'],red,green,blue)
 	else:
 		status="success"
+
 	if(existsFile("r00tzSwitchOn")):
 		state = "ON"
+		c = getFile("r00tzSwitchOn")
+		red = c["channelred"]
+		green = c["channelgreen"]
+		blue = c["channelblue"]
 	else:
 		state = "OFF"
-	return json.dumps({"status":status,"state":state})
+		
+	if status == "failure":
+		return json.dumps({"status":status})
+	else:
+		return json.dumps({"status":status,"basicstate":state, "channelred":red,"channelgreen":green,"channelblue":blue})
 	
 	
  

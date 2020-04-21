@@ -81,11 +81,11 @@ def dogetswitches():
 		c = conn.cursor()
 		content = request.get_json()
 		if "switch_id" in content:
-			c.execute("select switch_id, switch_name, status from switch_status where switch_id='%s'" % content["switch_id"]) #sql injection
+			c.execute("select switch_id, switch_name, type, status from switch_status where switch_id='%s'" % content["switch_id"]) #sql injection
 		elif "house_id" in content:
-			c.execute("select switch_id, switch_name, status from switch_status where house_id='%s'" % content["house_id"]) #sql injection
+			c.execute("select switch_id, switch_name, type, status from switch_status where house_id='%s'" % content["house_id"]) #sql injection
 		else:
-			c.execute("select switch_id, switch_name, status from switch_status;")
+			c.execute("select switch_id, switch_name, type, status from switch_status;")
 		status = {"result":"success", "status":c.fetchall()}
 		print(status)
 		return json.dumps(status)
@@ -100,13 +100,13 @@ def dogetstatus():
 		content = request.get_json()
 		try:
 			if "switch_id" in content:
-				c.execute("select switch_name, status from switch_status where house_id=? and switch_id=?;",(content["house_id"],content["switch_id"]))
+				c.execute("select switch_name, type, status from switch_status where house_id=? and switch_id=?;",(content["house_id"],content["switch_id"]))
 				print("select switch_name, status from switch_status where house_id=? and switch_id=?",(content["house_id"],content["switch_id"]))
 				logevent(content["house_id"], "house_id %s has requested status on switch %s" % (content["house_id"], content["switch_id"]))
 				status = {"result":"success", "status":c.fetchone()}
 				print(status)
 			else:
-				c.execute("select switch_id, switch_name, status from switch_status where house_id=?",(content["house_id"],))
+				c.execute("select switch_id, switch_name, type, status from switch_status where house_id=?",(content["house_id"],))
 				status = {"result":"success", "status":c.fetchall()}
 			logevent(content["house_id"], "house_id %s has requested status" % (content["house_id"]))
 		except:
@@ -130,19 +130,18 @@ def doregisterswitch():
 		conn = getdbconn()
 		c = conn.cursor()
 		content = request.get_json()
-		try:
-			c.execute("select homes.house_id, count(status) from homes left join switch_status on homes.house_id=switch_status.house_id where  homes.house_id=? group by homes.house_id;",(content["house_id"],))
-			(house_id, count) = c.fetchone()
-			switch_id = "-".join(house_id.split("-")[:-1] + ["%012d" % (count,)])
-
-			c.execute("insert into switch_status (switch_id,switch_name,house_id,status) values (?,?,?,?)" , (switch_id,content["switch_name"], content["house_id"], "OFF"))
-			conn.commit()
-			status = {"result":"success", "switch_id":switch_id}
-			logevent(content["house_id"], "house_id %s is now registered" % (switch_id))
-		except:
-			conn.rollback()
-			status["error"] = "this switch already exists for this home"
-			logevent(None, "error from ip address XXXX making registerswitch api query")
+#		try:
+		c.execute("select homes.house_id, count(status) from homes left join switch_status on homes.house_id=switch_status.house_id where  homes.house_id=? group by homes.house_id;",(content["house_id"],))
+		(house_id, count) = c.fetchone()
+		switch_id = "-".join(house_id.split("-")[:-1] + ["%012d" % (count,)])
+		c.execute("insert into switch_status (switch_id,switch_name,house_id,type,status) values (?,?,?,?,?)" , (switch_id,content["switch_name"], content["house_id"], content["type"], json.dumps({"basicstate":"OFF","channelred":0,"channelgren":0,"channelblue":0})))
+		conn.commit()
+		status = {"result":"success", "switch_id":switch_id}
+		logevent(content["house_id"], "house_id %s is now registered" % (switch_id))
+#		except:
+#			conn.rollback()
+#			status["error"] = "this switch already exists for this home"
+#			logevent(None, "error from ip address XXXX making registerswitch api query")
 	else:
 		status["error"] = "no json data provided"
 		logevent(None, "non-json data from ip address XXXX making registerswitch api query")
@@ -179,7 +178,7 @@ def doregister():
 	return json.dumps(status)
 		 
 		 
-@app.route("/api/setStatus", methods=['POST'])
+@app.route("/api/setState", methods=['POST'])
 def dosetstatus():
 	status = {"result":"fail"}
 	if request.is_json:
@@ -187,16 +186,16 @@ def dosetstatus():
 		c = conn.cursor()
 		content = request.get_json()
 		#i should make this a sql ijection
-		try:
-			c.execute("update switch_status set status=? where house_id=? and switch_id=?" , (content["status"],  content["house_id"],content["switch_id"]))
+#		try:
+		c.execute("update switch_status set status=? where house_id=? and switch_id=?" , (content["state"],  content["house_id"],content["switch_id"]))
 #			print("update switch_status set status=? where house_id=? and switch_id=?" , (content["status"],  content["house_id"],content["switch_id"]))
-			status = {"result":"success", "status":content["status"]}
-			conn.commit()
-			logevent(content["house_id"], "house_id %s has set status %s on switch %s" % (content["house_id"], content["status"], content["switch_id"]))
-		except:
-			conn.rollback()
-			status["error"] = "the resource could not be located"
-			logevent(None, "error from ip address XXXX making setStatus api query")
+		status = {"result":"success", "status":content["state"]}
+		conn.commit()
+		logevent(content["house_id"], "house_id %s has set status %s on switch %s" % (content["house_id"], content["state"], content["switch_id"]))
+#		except:
+#			conn.rollback()
+#			status["error"] = "the resource could not be located"
+#			logevent(None, "error from ip address XXXX making setStatus api query")
 	else:
 		status["error"] = "no json data provided"
 		logevent(None, "non-json data from ip address XXXX making setStatus api query")
@@ -261,7 +260,7 @@ def logevent(house_id, eventstring):
 def buildDB(conn):
 	conn.execute("create table if not exists logs(event_id INTEGER PRIMARY KEY AUTOINCREMENT, ts  integer, house_id text, logmsg  text);")
 	conn.execute("create table IF NOT EXISTS homes(house_id text,username text, password text, admin integer, first text,last text,address text,city text,state text,phone text,  UNIQUE(house_id), UNIQUE(username));")
-	conn.execute("create table IF NOT EXISTS switch_status(switch_id text,house_id text, switch_name text, status integer, UNIQUE(switch_id,house_id), FOREIGN KEY(house_id) REFERENCES homes(house_id));")
+	conn.execute("create table IF NOT EXISTS switch_status(switch_id text,house_id text, switch_name text, type text, status text,  UNIQUE(switch_id,house_id), FOREIGN KEY(house_id) REFERENCES homes(house_id));")
 	conn.commit()
 	conn.execute("insert or REPLACE  into homes(house_id,username,password,admin, first,last,address,city,state,phone) values (Null,'admin', 'XouBL*Vr$3', 1, 'internal', 'only', Null,Null,Null,Null)")
 	conn.commit()

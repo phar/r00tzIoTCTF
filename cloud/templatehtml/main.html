@@ -83,13 +83,14 @@
 					c1.innerHTML = "You dont' seem to have any swithes on your account, womp womp";
 				}else{
 					state["status"].forEach(function (arrayItem) {
+						var state = JSON.parse(arrayItem[1]);
 						var table = document.getElementById("statusTable");
 						var row = table.insertRow(0);
 						var c1 = row.insertCell(0);
 						var c2 = row.insertCell(1);
 						var c3 = row.insertCell(2);
 						c1.innerHTML =  arrayItem[1];
-						if(arrayItem[1] == "ON"){
+						if(state["basicstate"] == "ON"){
 							c3.innerHTML='<img id=switchLink src="/images/switch-on.png">';
 							c2.innerHTML = "ON";
 							document.getElementById('switchLink').onclick = function() { switchOff(arrayItem[0]); };

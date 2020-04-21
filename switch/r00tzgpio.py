@@ -46,10 +46,10 @@ try:
 				
 			GPIO.setup(IOT_SWITCH_PIN, GPIO.OUT)
 			
-			if BUTTON_PRESSED_STATE = 0:
+			if BUTTON_PRESSED_STATE == 0:
 				GPIO.add_event_detect(INPUT_BUTTON_0_PIN, GPIO.FALLING, callback = self.switchpress, bouncetime = 100)
 				GPIO.add_event_detect(INPUT_BUTTON_1_PIN, GPIO.FALLING, callback = self.resetpress, bouncetime = 100)
-			elif:
+			else:
 				GPIO.add_event_detect(INPUT_BUTTON_0_PIN, GPIO.RISING, callback = self.switchpress, bouncetime = 100)
 				GPIO.add_event_detect(INPUT_BUTTON_1_PIN, GPIO.RISING, callback = self.resetpress, bouncetime = 100)
 
@@ -160,7 +160,7 @@ except:
 
 		def led_blink(self,led, duration=.05):
 			self.logger("led %s blink with duration %f" % (led,duration))
-			self.print("led %s blink with duration %f" % (led,duration))
+			print("led %s blink with duration %f" % (led,duration))
 
 
 if __name__ == "__main__":

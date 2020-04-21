@@ -34,20 +34,24 @@ class r00tsIOTAPI():
 			self.house_id = ret["house_id"]
 		return ret
 		
-	def apiSetStatus(self, switch_id, status):
-		return self.api_request("setStatus", {"house_id":self.house_id,"switch_id":switch_id,"status":status})
+	def apiSetStatus(self, switch_id, status, red=255,green=255, blue=255):
+		if status in ["ON","on","On",1,True]:
+			state = {"basicstate":"ON","channelred":red,"channelgrren":green,"channelblue":blue}
+		else:
+			state = {"basicstate":"OFF","channelred":0,"channelgrren":0,"channelblue":0}
+		return self.api_request("setState", {"house_id":self.house_id,"switch_id":switch_id,"state":json.dumps(state)})
 
 	def apiGetStatus(self, switch_id):
-		return self.api_request("getStatus", {"house_id":self.house_id,"switch_id":switch_id})
+		return self.api_request("getState", {"house_id":self.house_id,"switch_id":switch_id})
 
 	def apiCheckUpdate(self):
 		return self.api_request("update", {})
 
-	def apiRegisterHouse(self, username, password, first, last, address, city, state, phone):
-		return self.api_request("register", {"username":username,"password":password,"first":first,"last":last,"address":address,"city":city,"state":state,"phone":phone})
+	def apiRegisterHouse(self,username, password, first, last, address, city, state, phone):
+		return self.api_request("register", {"username":username,"password":password, "first":first,"last":last,"address":address,"city":city,"state":state,"phone":phone})
 
-	def apiRegisterSwitch(self, switch_name):
-		return self.api_request("registerSwitch", {"house_id":self.house_id, "switch_name":switch_name})
+	def apiRegisterSwitch(self,type, switch_name):
+		return self.api_request("registerSwitch", {"house_id":self.house_id, "type":type, "switch_name":switch_name})
 
  
 if __name__ == "__main__":
