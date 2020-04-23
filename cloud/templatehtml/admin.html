@@ -6,6 +6,10 @@
          body {
          font-family: "Lato", sans-serif;
          }
+		  .color-box {
+			  width: 20px;
+			  height: 20px;
+		  }
          .sidenav {
          height: 100%;
          width: 0;
@@ -91,7 +95,6 @@
 						c3.innerHTML = "Username";
 						c4.innerHTML = "Switch count";
 
-											
 						state["status"].forEach(function (arrayItem) {
 							var row = table.insertRow(1);
 							var c1 = row.insertCell(0);
@@ -123,27 +126,44 @@
         	xhttp.open("POST", "/api/getSwitches");
 			xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				var state = JSON.parse(this.responseText);
+				var result = JSON.parse(this.responseText);
 				var table  = document.getElementById(home_id);
 
          		for(var i=table.rows.length;i>0;i--) {
          			table.deleteRow(i-1);
          		}
-				state["status"].forEach(function (arrayItem){
+				result["status"].forEach(function (arrayItem){
 					var state = JSON.parse(arrayItem[3]);
 					var row = table.insertRow(0);
 					var c1 = row.insertCell(0);
 					var c2 = row.insertCell(1);
 					var c3 = row.insertCell(2);
-					c1.innerHTML =  arrayItem[1];
-					if(state["basicstate"] == "ON"){
-						c3.innerHTML='<img id=\''+arrayItem[0]+'\' width="25%" height="25%" src="/images/switch-on.png">';
-						c2.innerHTML = "ON";
-						document.getElementById(arrayItem[0]).onclick = function() { switchOff(home_id,arrayItem[0]); };
-					}else{
-						c3.innerHTML='<img id=\''+arrayItem[0]+'\' width="25%" height="25%" src="/images/switch-off.png">';
-						c2.innerHTML = "OFF";
-						document.getElementById(arrayItem[0]).onclick = function() { switchOn(home_id,arrayItem[0]); };
+
+					if (arrayItem[2] == "switch"){
+						c1.innerHTML =  arrayItem[1];
+						if(state["basicstate"] == "ON"){
+							c3.innerHTML='<img id=\''+arrayItem[0]+'\' width="25%" height="25%" src="/images/switch-on.png">';
+							c2.innerHTML = "ON";
+							document.getElementById(arrayItem[0]).onclick = function() { switchOff(home_id,arrayItem[0]); };
+						}else{
+							c3.innerHTML='<img id=\''+arrayItem[0]+'\' width="25%" height="25%" src="/images/switch-off.png">';
+							c2.innerHTML = "OFF";
+							document.getElementById(arrayItem[0]).onclick = function() { switchOn(home_id,arrayItem[0]); };
+						}
+					}else if( arrayItem[2] == "dmxswitch"){
+						var c4 = row.insertCell(3);
+						c4.innerHTML = '<div align="center" class="color-box" id=\''+arrayItem[0]+'_c\'></div>';
+						var c = document.getElementById(arrayItem[0]+'_c');
+						if(state["basicstate"] == "ON"){
+							c3.innerHTML='<img id=\''+arrayItem[0]+'\' width="25%" height="25%" src="/images/switch-on.png">';
+							c2.innerHTML = "ON";
+							document.getElementById(arrayItem[0]).onclick = function() { switchOff(home_id,arrayItem[0]); };
+						}else{
+							c3.innerHTML='<img id=\''+arrayItem[0]+'\' width="25%" height="25%" src="/images/switch-off.png">';
+							c2.innerHTML = "OFF";
+							document.getElementById(arrayItem[0]).onclick = function() { switchOn(home_id,arrayItem[0]); };
+						}
+						c.style.backgroundColor = "rgb("+state["channelred"]+","+state["channelgreen"]+","+state["channelblue"]+")";
 					}
 				});
 				}
@@ -154,18 +174,31 @@
 	  
          function switchOff(home_id, switch_id) {
          	var xhttp = new XMLHttpRequest();
-         	xhttp.open("POST", "/api/setStatus");
-			xhttp.onreadystatechange = function() {expandHome(home_id);};
-			xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-         	xhttp.send(JSON.stringify({"status":"OFF","house_id":home_id,"switch_id":switch_id}));
+			xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				var switcht  = document.getElementById(switch_id);
+				switcht.src = "/images/switch-on.png";
+				switcht.onclick = function() { switchOn(home_id,switch_id); };
+			}
+			}
+         	xhttp.open("POST", "/api/setState");
+         	xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+         	xhttp.send(JSON.stringify({"house_id":home_id,"switch_id":switch_id,"state":JSON.stringify({"basicstate":"OFF"})}));
          }
          
-         function switchOn(home_id,switch_id) {
-         	var xhttp = new XMLHttpRequest();
-         	xhttp.open("POST", "/api/setStatus");
-			xhttp.onreadystatechange = function() {expandHome(home_id);};
-			xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-         	xhttp.send(JSON.stringify({"status":"ON","house_id":home_id,"switch_id":switch_id}));
+         function switchOn(home_id, switch_id) {
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				var switcht  = document.getElementById(switch_id);
+				switcht.src = "/images/switch-off.png";
+				switcht.onclick  = function() { switchOff(home_id,switch_id); };
+
+			}
+			}
+         	xhttp.open("POST", "/api/setState");
+         	xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+			xhttp.send(JSON.stringify({"house_id":home_id,"switch_id":switch_id,"state":JSON.stringify({"basicstate":"ON"})}));
          }
       </script>
    </body>

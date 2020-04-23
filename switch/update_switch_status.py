@@ -36,9 +36,9 @@ class r00tsIOTAPI():
 		
 	def apiSetStatus(self, switch_id, status, red=255,green=255, blue=255):
 		if status in ["ON","on","On",1,True]:
-			state = {"basicstate":"ON","channelred":red,"channelgrren":green,"channelblue":blue}
+			state = {"basicstate":"ON","channelred":red,"channelgreen":green,"channelblue":blue}
 		else:
-			state = {"basicstate":"OFF","channelred":0,"channelgrren":0,"channelblue":0}
+			state = {"basicstate":"OFF","channelred":0,"channelgreen":0,"channelblue":0}
 		return self.api_request("setState", {"house_id":self.house_id,"switch_id":switch_id,"state":json.dumps(state)})
 
 	def apiGetStatus(self, switch_id):

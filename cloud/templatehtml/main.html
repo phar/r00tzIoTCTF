@@ -6,6 +6,10 @@
          body {
          font-family: "Lato", sans-serif;
          }
+		  .color-box {
+			  width: 70px;
+			  height: 70px;
+		  }
          .sidenav {
          height: 100%;
          width: 0;
@@ -58,14 +62,40 @@
          <table id="statusTable"></table>
       </center>
       <script>
-         function openNav() {
-           document.getElementById("mySidenav").style.width = "250px";
-         }
-         
-         function closeNav() {
-           document.getElementById("mySidenav").style.width = "0";
-         }
-         
+	 function openNav() {
+	   document.getElementById("mySidenav").style.width = "250px";
+	 }
+	 
+	 function closeNav() {
+	   document.getElementById("mySidenav").style.width = "0";
+	 }
+
+	 function switchOnColor(switch_id) {
+		var xhttp = new XMLHttpRequest();
+		
+		var r = document.getElementById(switch_id+'_r');
+		var g = document.getElementById(switch_id+'_g');
+		var b = document.getElementById(switch_id+'_b');
+
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				var state = JSON.parse(this.responseText);
+				setColor(switch_id);
+			}
+		}
+		xhttp.open("POST", "/api/setState");
+		xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		xhttp.send(JSON.stringify({"house_id":'{{ house_id }}',"switch_id":switch_id,"state":JSON.stringify({"basicstate":"ON","channelred":r.value,"channelgreen":g.value,"channelblue":b.value})}));
+		setColor(switch_id);
+	 }
+
+	  function setColor(switch_id){
+		  var r = document.getElementById(switch_id+'_r');
+		  var g = document.getElementById(switch_id+'_g');
+		  var b = document.getElementById(switch_id+'_b');
+		  var c = document.getElementById(switch_id+'_c');
+		  c.style.backgroundColor = "rgb("+r.value+","+g.value+","+b.value+")";
+	  }
          function loadState() {
            var xhttp = new XMLHttpRequest();
            xhttp.onreadystatechange = function() {
@@ -83,44 +113,83 @@
 					c1.innerHTML = "You dont' seem to have any swithes on your account, womp womp";
 				}else{
 					state["status"].forEach(function (arrayItem) {
-						var state = JSON.parse(arrayItem[1]);
+						var state = JSON.parse(arrayItem[3]);
 						var table = document.getElementById("statusTable");
 						var row = table.insertRow(0);
 						var c1 = row.insertCell(0);
 						var c2 = row.insertCell(1);
 						var c3 = row.insertCell(2);
 						c1.innerHTML =  arrayItem[1];
-						if(state["basicstate"] == "ON"){
-							c3.innerHTML='<img id=switchLink src="/images/switch-on.png">';
-							c2.innerHTML = "ON";
-							document.getElementById('switchLink').onclick = function() { switchOff(arrayItem[0]); };
-						}else{
-							c3.innerHTML='<img id=switchLink src="/images/switch-off.png">';
-							c2.innerHTML = "OFF";
-							document.getElementById('switchLink').onclick = function() { switchOn(arrayItem[0]); };
+
+						if(arrayItem[2] == "switch"){
+						
+							if(state["basicstate"] == "ON"){
+								c3.innerHTML='<img id=switchLink src="/images/switch-on.png">';
+								c2.innerHTML = "ON";
+								document.getElementById('switchLink').onclick = function() { switchOff(arrayItem[0]); };
+							}else{
+								c3.innerHTML='<img id=switchLink src="/images/switch-off.png">';
+								c2.innerHTML = "OFF";
+								document.getElementById('switchLink').onclick = function() { switchOn(arrayItem[0]); };
+							}
+						}else if(arrayItem[2]  == "dmxswitch"){
+							var buff = "<table><tr><td colspan=3>"
+							if(state["basicstate"] == "ON"){
+								buff += '<img id=switchLink src="/images/switch-on.png" onclick="switchOff(\''+arrayItem[0]+'\')">';
+								c2.innerHTML = "ON";
+							}else{
+								buff += '<img id=switchLink src="/images/switch-off.png" onclick="switchOnColor(\''+arrayItem[0]+'\');">';
+								c2.innerHTML = "OFF";
+							}
+							buff += "</td>";
+							buff += '<td><table>';
+							buff += '<tr><td>Red:</td><td><input type="range" min="0" max="255" id="'+arrayItem[0]+'_r" step="1" onmouseup="switchOnColor(\''+arrayItem[0]+'\')"></td></tr>'
+							buff += '<tr><td>Green:</td><td><input type="range" min="0" max="255" id="'+arrayItem[0]+'_g" step="1" onmouseup="switchOnColor(\''+arrayItem[0]+'\')"></tr></td>'
+							buff += '<tr><td>Blue:</td><td><input type="range" min="0" max="255" id="'+arrayItem[0]+'_b" step="1" onmouseup="switchOnColor(\''+arrayItem[0]+'\')"></td></tr>'
+							buff += '</table></td><td colspan=3><div class="color-box" id="'+arrayItem[0]+'_c"></div></td</tr></table>';
+							c3.innerHTML = buff;
+							
+							var r = document.getElementById(arrayItem[0]+'_r');
+							var g = document.getElementById(arrayItem[0]+'_g');
+							var b = document.getElementById(arrayItem[0]+'_b');
+							
+							r.value = state["channelred"];
+							g.value = state["channelgreen"];
+							b.value = state["channelblue"];
+							setColor(arrayItem[0]);
 						}
 					});
 				}
          	}
            };
-           xhttp.open("POST", "/api/getStatus", true);
+           xhttp.open("POST", "/api/getState", true);
            xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
            xhttp.send(JSON.stringify({"house_id":"{{ house_id }}"}));
-           setTimeout(loadState, 2000);
+           setTimeout(loadState, 5000);
          }
          
          function switchOff(switch_id) {
          	var xhttp = new XMLHttpRequest();
-         	xhttp.open("POST", "/api/setStatus");
+			xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				loadState();
+			}
+			}
+         	xhttp.open("POST", "/api/setState");
          	xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-         	xhttp.send(JSON.stringify({"status":"OFF","house_id":"{{ house_id }}","switch_id":switch_id}));
+         	xhttp.send(JSON.stringify({"house_id":"{{ house_id }}","switch_id":switch_id,"state":JSON.stringify({"basicstate":"OFF"})}));
          }
          
          function switchOn(switch_id) {
          	var xhttp = new XMLHttpRequest();
-         	xhttp.open("POST", "/api/setStatus");
+			xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				loadState();
+			}
+			}
+         	xhttp.open("POST", "/api/setState");
          	xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-         	xhttp.send(JSON.stringify({"status":"ON","house_id":"{{ house_id }}","switch_id":switch_id}));
+			xhttp.send(JSON.stringify({"house_id":"{{ house_id }}","switch_id":switch_id,"state":JSON.stringify({"basicstate":"ON"})}));
          }
       </script>
    </body>

@@ -87,11 +87,10 @@ def dogetswitches():
 		else:
 			c.execute("select switch_id, switch_name, type, status from switch_status;")
 		status = {"result":"success", "status":c.fetchall()}
-		print(status)
 		return json.dumps(status)
 
 
-@app.route("/api/getStatus", methods=['POST'])
+@app.route("/api/getState", methods=['POST'])
 def dogetstatus():
 	status = {"result":"fail"}
 	if request.is_json:
@@ -101,10 +100,8 @@ def dogetstatus():
 		try:
 			if "switch_id" in content:
 				c.execute("select switch_name, type, status from switch_status where house_id=? and switch_id=?;",(content["house_id"],content["switch_id"]))
-				print("select switch_name, status from switch_status where house_id=? and switch_id=?",(content["house_id"],content["switch_id"]))
 				logevent(content["house_id"], "house_id %s has requested status on switch %s" % (content["house_id"], content["switch_id"]))
 				status = {"result":"success", "status":c.fetchone()}
-				print(status)
 			else:
 				c.execute("select switch_id, switch_name, type, status from switch_status where house_id=?",(content["house_id"],))
 				status = {"result":"success", "status":c.fetchall()}
@@ -130,18 +127,22 @@ def doregisterswitch():
 		conn = getdbconn()
 		c = conn.cursor()
 		content = request.get_json()
-#		try:
-		c.execute("select homes.house_id, count(status) from homes left join switch_status on homes.house_id=switch_status.house_id where  homes.house_id=? group by homes.house_id;",(content["house_id"],))
-		(house_id, count) = c.fetchone()
-		switch_id = "-".join(house_id.split("-")[:-1] + ["%012d" % (count,)])
-		c.execute("insert into switch_status (switch_id,switch_name,house_id,type,status) values (?,?,?,?,?)" , (switch_id,content["switch_name"], content["house_id"], content["type"], json.dumps({"basicstate":"OFF","channelred":0,"channelgren":0,"channelblue":0})))
-		conn.commit()
-		status = {"result":"success", "switch_id":switch_id}
-		logevent(content["house_id"], "house_id %s is now registered" % (switch_id))
-#		except:
-#			conn.rollback()
-#			status["error"] = "this switch already exists for this home"
-#			logevent(None, "error from ip address XXXX making registerswitch api query")
+		try:
+			if  content["type"] in ["switch","rgbswitch", "dmxswitch"]:
+				c.execute("select homes.house_id, count(status) from homes left join switch_status on homes.house_id=switch_status.house_id where  homes.house_id=? group by homes.house_id;",(content["house_id"],))
+				(house_id, count) = c.fetchone()
+				switch_id = "-".join(house_id.split("-")[:-1] + ["%012d" % (count,)])
+				c.execute("insert into switch_status (switch_id,switch_name,house_id,type,status) values (?,?,?,?,?)" , (switch_id,content["switch_name"], content["house_id"], content["type"], json.dumps({"basicstate":"OFF","channelred":0,"channelgreen":0,"channelblue":0})))
+				conn.commit()
+				status = {"result":"success", "switch_id":switch_id}
+				logevent(content["house_id"], "house_id %s is now registered" % (switch_id))
+			else:
+				status["error"] = "request for unssported switch type"
+				logevent(content["house_id"], "house_id %s is now registered" % (switch_id))
+		except:
+			conn.rollback()
+			status["error"] = "this switch already exists for this home"
+			logevent(None, "error from ip address XXXX making registerswitch api query")
 	else:
 		status["error"] = "no json data provided"
 		logevent(None, "non-json data from ip address XXXX making registerswitch api query")
@@ -185,20 +186,41 @@ def dosetstatus():
 		conn = getdbconn()
 		c = conn.cursor()
 		content = request.get_json()
-		#i should make this a sql ijection
-#		try:
-		c.execute("update switch_status set status=? where house_id=? and switch_id=?" , (content["state"],  content["house_id"],content["switch_id"]))
-#			print("update switch_status set status=? where house_id=? and switch_id=?" , (content["status"],  content["house_id"],content["switch_id"]))
-		status = {"result":"success", "status":content["state"]}
-		conn.commit()
-		logevent(content["house_id"], "house_id %s has set status %s on switch %s" % (content["house_id"], content["state"], content["switch_id"]))
-#		except:
-#			conn.rollback()
-#			status["error"] = "the resource could not be located"
-#			logevent(None, "error from ip address XXXX making setStatus api query")
+		print(content)
+		state = json.loads(content["state"])
+		try:
+			try:
+				c.execute("select status from switch_status where house_id=? and switch_id=?;",(content["house_id"],content["switch_id"]))
+				cc = json.loads(c.fetchone()[0])
+			except:
+				cc = {"channelred":255,"channelgreen":255,"channelblue":255}
+				
+			if "channelred" in state:
+				red = state['channelred']
+			else:
+				red = cc["channelred"]
+			if "channelgreen" in state:
+				green = state['channelgreen']
+			else:
+				green = cc["channelgreen"]
+			if "channelblue" in state:
+				blue = state['channelblue']
+			else:
+				blue  = cc["channelblue"]
+				
+			state = {"basicstate":state["basicstate"],"channelred":red,"channelgreen":green,"channelblue":blue}
+			c.execute("update switch_status set status=? where house_id=? and switch_id=?" , (json.dumps(state),  content["house_id"],content["switch_id"]))
+			conn.commit()
+			status["result"] = "success"
+			status["state"] = state
+			logevent(content["house_id"], "house_id %s has set status %s on switch %s" % (content["house_id"], state["basicstate"], content["switch_id"]))
+		except:
+			conn.rollback()
+			status["error"] = "the resource could not be located"
+			logevent(None, "error from ip address XXXX making setState api query")
 	else:
 		status["error"] = "no json data provided"
-		logevent(None, "non-json data from ip address XXXX making setStatus api query")
+		logevent(None, "non-json data from ip address XXXX making setState api query")
 			
 	return json.dumps(status)
 	
@@ -222,7 +244,6 @@ def dologin():
 		content = request.get_json()
 		try:
 			c.execute("select password,house_id,admin from homes where username='%s'; " % (content['username'],)) #injection
-			print(content)
 			row = c.fetchone()
 			if row is not None:
 				if  content['password'] == row[0]:

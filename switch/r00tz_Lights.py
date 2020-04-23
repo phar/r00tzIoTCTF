@@ -191,10 +191,12 @@ def dorestore(): #FIXME not finished
 @app.route("/api/lights",methods=['POST','GET'])
 def dolights():
 	#no login here
-	status="failure"
+	state="failure"
 	red = None
 	green = None
 	blue = None
+	type = getFile("r00tzSwitchType")
+
 	if request.method == 'POST':
 		if request.is_json:
 			content = request.get_json()
@@ -202,39 +204,44 @@ def dolights():
 			switch = getFile("r00tzSwitchID")
 			gapi = r00tsIoTGPIO(logfunc=logevent)
 			rapi = r00tsIOTAPI(house_id=home,apicallupdate=lambda:gapi.led_blink("cloudapi"))
+			print(content)
 			if content['basicstate'] == "ON":
-				if "red" in content:
-					red = content['red']
+				touchFile("r00tzSwitchOn")
+				cc = getFile("r00tzSwitchColor")
+				if "channelred" in content:
+					red = content['channelred']
 				else:
-					red = 255
-				if "green" in content:
-					green = content['green']
+					red = cc["channelred"]
+				if "channelgreen" in content:
+					green = content['channelgreen']
 				else:
-					green = 255
-				if "blue" in content:
-					blue = content['blue']
+					green= cc["channelgreen"]
+				if "channelblue" in content:
+					blue = content['channelblue']
 				else:
-					blue = 255
-				touchFile("r00tzSwitchOn",{"channelred":red,"channelgreen":green,"channelblue":blue})
+					blue  = cc["channelblue"]
+				touchFile("r00tzSwitchColor",{"channelred":red,"channelgreen":green,"channelblue":blue})
 			elif content['basicstate'] == "OFF":
 				cleanFile("r00tzSwitchOn")
 			rapi.apiSetStatus(switch,content['basicstate'],red,green,blue)
+			return json.dumps({"type":type,"channelred":red,"channelgreen":green,"channelblue":blue})
 	else:
 		status="success"
 
 	if(existsFile("r00tzSwitchOn")):
 		state = "ON"
-		c = getFile("r00tzSwitchOn")
-		red = c["channelred"]
-		green = c["channelgreen"]
-		blue = c["channelblue"]
 	else:
 		state = "OFF"
 		
-	if status == "failure":
-		return json.dumps({"status":status})
-	else:
-		return json.dumps({"status":status,"basicstate":state, "channelred":red,"channelgreen":green,"channelblue":blue})
+	print("type %s" %type)
+	if type in ["rgbswitch", "dmxswitch"]:
+		c = getFile("r00tzSwitchColor")
+		red = c["channelred"]
+		green = c["channelgreen"]
+		blue = c["channelblue"]
+		return json.dumps({"type":type, "basicstate":state, "channelred":red,"channelgreen":green,"channelblue":blue})
+
+	return json.dumps({"type":type, "basicstate":state})
 	
 	
  

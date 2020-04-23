@@ -20,53 +20,98 @@
          <table>
             <tr>
                <td>Current Status:</td>
-               <td id="switchText">ON</td>
-               <td><a id="switchLink"><img id="switchImg" src="../images/switch-on.png"></a></td>
+               <td id="switchText"></td>
+               <td id="switchLink"></td>
             </tr>
          </table>
       </center>
       <script>
          function switchOff() {
          	var xhttp = new XMLHttpRequest();
-         	xhttp.open("POST", "/api/lights");
+			xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				loadState();
+			}
+			}
+			xhttp.open("POST", "/api/lights");
          	xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
          	xhttp.send(JSON.stringify({"basicstate":"OFF"}));
-         	
          }
          
          function switchOn() {
          	var xhttp = new XMLHttpRequest();
-         	xhttp.open("POST", "/api/lights");
+			xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				loadState();
+			}
+			}
+			xhttp.open("POST", "/api/lights");
          	xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
          	xhttp.send(JSON.stringify({"basicstate":"ON"}));
          }
          
-         function switchOnColor(red,green,blue) {
+         function switchOnColor() {
          	var xhttp = new XMLHttpRequest();
+			var r = document.querySelector('#r');
+			var g = document.querySelector('#g');
+			var b = document.querySelector('#b');
+
+			xhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					var state = JSON.parse(this.responseText);
+					r.value = state["channelred"];
+					g.value = state["channelgreen"];
+					b.value = state["channelblue"];
+					setColor(r.value,g.value,b.value);
+				}
+			}
+			
          	xhttp.open("POST", "/api/lights");
          	xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-         	xhttp.send(JSON.stringify({"basicstate":"ON","channelred":red,"channelgreen":green,"channelblue":blue}));
+			xhttp.send(JSON.stringify({"basicstate":"ON","channelred":r.value,"channelgreen":g.value,"channelblue":b.value}));
+
          }
 
+	  function setColor(r,g,b){
+		  document.body.style.backgroundColor = "rgb("+r+","+g+","+b+")";
+		  console.log("rgb("+r+", "+g+", "+b+");");
+	  }
 		 function loadState() {
            var xhttp = new XMLHttpRequest();
            xhttp.onreadystatechange = function() {
          	if (this.readyState == 4 && this.status == 200) {
          		var state = JSON.parse(this.responseText);
-         		if(state['basicstate'] == "ON"){
-         			document.getElementById('switchImg').src='../images/switch-on.png';
-         			document.getElementById('switchText').innerHTML = "ON";
-         			document.getElementById('switchLink').onclick = switchOff;
-         		}else{
-         			document.getElementById('switchImg').src='../images/switch-off.png';
-         			document.getElementById('switchText').innerHTML = "OFF";
-         			document.getElementById('switchLink').onclick = switchOn;
-         		}
+				if(state['type'] == "switch"){
+					if(state['basicstate'] == "ON"){
+						document.getElementById('switchText').innerHTML = "ON";
+						document.getElementById('switchLink').innerHTML = "<img  src=\"../images/switch-on.png\">";
+						document.getElementById('switchLink').onclick = switchOff;
+					}else{
+						document.getElementById('switchLink').innerHTML = "<img  src=\"../images/switch-off.png\">";
+						document.getElementById('switchText').innerHTML = "OFF";
+						document.getElementById('switchLink').onclick = switchOn;
+					}
+				}else if (state['type'] == "dmxswitch"){
+					document.getElementById('switchText').innerHTML = state['basicstate'];
+					if(state['basicstate'] == "ON"){
+						var buff =  "<table><tr><td colspan=3><img  src=\"../images/switch-on.png\" onclick=\"switchOff()\"></td><td>";
+					}else{
+						var buff =  "<table><tr><td colspan=3><img  src=\"../images/switch-off.png\" onclick=\"switchOn()\"></td><td>";
+					}
+					document.getElementById('switchLink').innerHTML =  buff + '<table><tr><td>Red:</td><td><input type="range" min="0" max="255" id="r" step="1" onmouseup="switchOnColor()"></td></tr><tr><td>Green:</td><td><input type="range" min="0" max="255" id="g" step="1" onmouseup="switchOnColor()"></tr></td><tr><td>Blue:</td><td><input type="range" min="0" max="255" id="b" step="1" onmouseup="switchOnColor()"></td></tr></table></td></tr></table>';
+					var r = document.querySelector('#r');
+					var g = document.querySelector('#g');
+					var b = document.querySelector('#b');
+					r.value = state["channelred"];
+					g.value = state["channelgreen"];
+					b.value = state["channelblue"];
+					setColor(r.value, g.value, b.value);
+				}
          	}
            };
            xhttp.open("GET", "/api/lights", true);
            xhttp.send();
-           setTimeout(loadState, 2000);
+           setTimeout(loadState, 5000);
          }
       </script>
    </body>
