@@ -1,3 +1,0 @@
-#* * * * *  test -x /home/r00ts/switchconfigs/r00tzRegistered || python /home/r00ts/update_switch_status.py --home_id `cat /home/r00ts/switchconfigs/r00tzRegistered | tr -d '"'` --get --switch_id `cat /home/r00ts/swith/configs/r00tzSwitchID | tr -d '"'` --updatestatus
-#*/15 * * * *  python /home/r00ts/update_switch_status.py  --update --apply
-#ignore this file, i will relocate this functionality to the daemon
