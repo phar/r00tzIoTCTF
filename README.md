@@ -14,3 +14,4 @@ TODO admin log view - still borken
 TODO firmware update unzip and execute
 TODO fix logo transparency
 TODO: user cloud login page has javascript bug that keeps setting the color to 	128,128,128
+TODO cleanup api behavior in server out scenarios

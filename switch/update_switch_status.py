@@ -67,10 +67,11 @@ if __name__ == "__main__":
 	parser.add_argument('--buttons', action="store_true", )
 	parser.add_argument('--update', action="store_true", )
 	parser.add_argument('--home_id', action="store", )
+	parser.add_argument('--type', action="store", )
 
 	results = parser.parse_known_args()[0]
 
-	gapi = r00tsIoTGPIO()
+	gapi = getBestGPIOHandler(results.type)
 #	rapi = r00tsIOTAPI()
 
 

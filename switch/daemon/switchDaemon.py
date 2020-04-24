@@ -19,7 +19,7 @@ CHECK_UPDATE_INTERVAL = (60 * 60) * 15
 CHECK_UPDATE_LAST_TIME = 0
 
 def main_program():
-	gapi = r00tsIoTGPIO(switchpress=switchbtn_eventm resetpress=resetbtn_event, logfunc=logevent)
+	gapi = getBestGPIOHandler(getFile("r00tzSwitchType"), switchpress=switchbtn_eventm resetpress=resetbtn_event, logfunc=logevent)
     while True:
 		if existsFile(r00tzSwitchOn):
 			gapi.relay_on()

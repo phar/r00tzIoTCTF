@@ -43,6 +43,7 @@ def context_proc():
 	
 	
 def logevent(eventstring):
+	print(eventstring) #fixme remove me
 	f  = open(os.path.join("logs","switchlog.txt"),"a")
 	f.write("%s\t%s\r\n" % (time.time(), eventstring))
 	f.close()
@@ -132,14 +133,15 @@ def doregister():
 	if request.method == 'POST':
 		if request.is_json:
 			content = request.get_json()
-			gapi = r00tsIoTGPIO(logfunc=logevent)
+			type = getFile("r00tzSwitchType")
+			gapi = getBestGPIOHandler(type, logfunc=logevent)
 			rapi = r00tsIOTAPI(apicallupdate=lambda:gapi.led_blink("cloudapi"))
 			x = rapi.apiRegisterHouse(content["username"],  content["password"], content["first"],  content["last"],  content["address"],  content["city"],  content["state"],  content["phone"])
 			if x["result"] == "success":
 				x = rapi.apiLogin(content["username"],content["password"]);
 				if x["result"] == "success":
 					touchFile("r00tzRegistered",x["house_id"])
-					x = rapi.apiRegisterSwitch(getFile("r00tzSwitchType"), content["switch_name"])
+					x = rapi.apiRegisterSwitch(type, content["switch_name"])
 					print(x)
 					if x["result"] == "success":
 						touchFile("r00tzSwitchID",x["switch_id"])
@@ -153,7 +155,8 @@ def doregisterSwitch():
 	if request.method == 'POST':
 		if request.is_json:
 			content = request.get_json()
-			gapi = r00tsIoTGPIO(logfunc=logevent)
+			type = getFile("r00tzSwitchType")
+			gapi = getBestGPIOHandler(type, logfunc=logevent)
 			rapi = r00tsIOTAPI(apicallupdate=lambda:gapi.led_blink("cloudapi"))
 			x = rapi.apiLogin(content["username"],content["password"]);
 			if x["result"] == "success":
@@ -196,13 +199,12 @@ def dolights():
 	green = None
 	blue = None
 	type = getFile("r00tzSwitchType")
-
 	if request.method == 'POST':
 		if request.is_json:
 			content = request.get_json()
 			home = getFile("r00tzRegistered")
 			switch = getFile("r00tzSwitchID")
-			gapi = r00tsIoTGPIO(logfunc=logevent)
+			gapi = getBestGPIOHandler(type, logfunc=logevent)
 			rapi = r00tsIOTAPI(house_id=home,apicallupdate=lambda:gapi.led_blink("cloudapi"))
 			print(content)
 			if content['basicstate'] == "ON":
@@ -233,7 +235,6 @@ def dolights():
 	else:
 		state = "OFF"
 		
-	print("type %s" %type)
 	if type in ["rgbswitch", "dmxswitch"]:
 		c = getFile("r00tzSwitchColor")
 		red = c["channelred"]
