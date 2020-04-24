@@ -59,7 +59,6 @@ def dogetlog():
 	status = "failure"
 	if request.is_json:
 		content = request.get_json()
-#		print(content)
 		f = open(os.path.join("logs", content['log']))
 		fc = f.read()
 		f.close()
@@ -96,7 +95,6 @@ def dochpasswd():
 				touchFile("r00tzUserDB",userdata)
 				status["result"] = "success"
 				logevent("user %s changed password" % session['username'])
-		print(content)
 	return json.dumps(status)
 
 
@@ -142,7 +140,6 @@ def doregister():
 				if x["result"] == "success":
 					touchFile("r00tzRegistered",x["house_id"])
 					x = rapi.apiRegisterSwitch(type, content["switch_name"])
-					print(x)
 					if x["result"] == "success":
 						touchFile("r00tzSwitchID",x["switch_id"])
 						status="success"
@@ -206,7 +203,6 @@ def dolights():
 			switch = getFile("r00tzSwitchID")
 			gapi = getBestGPIOHandler(type, logfunc=logevent)
 			rapi = r00tsIOTAPI(house_id=home,apicallupdate=lambda:gapi.led_blink("cloudapi"))
-			print(content)
 			if content['basicstate'] == "ON":
 				touchFile("r00tzSwitchOn")
 				cc = getFile("r00tzSwitchColor")
@@ -278,10 +274,11 @@ def dologout():
 	return redirect(url_for('dohome'))
 
 
+app.config['DEBUG'] = True
+app.secret_key = "any random string" #;)
+Path(os.path.join("logs","switchlog.txt")).touch()
+
 if __name__ == "__main__":
-	app.config['DEBUG'] = True
-	app.secret_key = "any random string" #;)
-	Path(os.path.join("logs","switchlog.txt")).touch()
 	app.run()
 
 

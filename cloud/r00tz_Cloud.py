@@ -186,7 +186,6 @@ def dosetstatus():
 		conn = getdbconn()
 		c = conn.cursor()
 		content = request.get_json()
-		print(content)
 		state = json.loads(content["state"])
 		try:
 			try:
@@ -286,14 +285,14 @@ def buildDB(conn):
 	conn.execute("insert or REPLACE  into homes(house_id,username,password,admin, first,last,address,city,state,phone) values (Null,'admin', 'XouBL*Vr$3', 1, 'internal', 'only', Null,Null,Null,Null)")
 	conn.commit()
 
+app.secret_key = "any random string" #;)
+app.config['DEBUG'] = True
+conn = getdbconn()
+buildDB(conn)
 
 if __name__ == "__main__":
-	app.secret_key = "any random string" #;)
-	app.config['DEBUG'] = True
-	conn = getdbconn()
-	buildDB(conn)
 	logevent(None, "server started")
-	app.run(port=5001)
+	app.run(host= '0.0.0.0',port=5001)
 
     
 

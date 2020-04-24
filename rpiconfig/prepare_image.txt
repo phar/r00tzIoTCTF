@@ -23,6 +23,7 @@ mkdir /home/r00tzI0t/flaskapp
 userdel pi
 sudo chown www-data /home/r00tzIoT/flaskapp
 sudo apt install zerofree
+sudo pip3 install python-daemon
 
 #copy flask site into flask directory
 
