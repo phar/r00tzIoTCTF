@@ -24,6 +24,8 @@ userdel pi
 sudo chown www-data /home/r00tzIoT/flaskapp
 sudo apt install zerofree
 sudo pip3 install python-daemon
+sudo apt-get install uwsgi-plugin-python3
+sudo apt install python3-rpi.gpio
 
 #copy flask site into flask directory
 

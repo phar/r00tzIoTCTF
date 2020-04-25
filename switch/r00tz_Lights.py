@@ -10,6 +10,7 @@ import time
 from update_switch_status import *
 from util import *
 from werkzeug.utils import secure_filename
+from r00tzGPIOProxy import *
 
 app = Flask(__name__)
 
@@ -59,6 +60,7 @@ def dogetlog():
 	status = "failure"
 	if request.is_json:
 		content = request.get_json()
+#		print(content)
 		f = open(os.path.join("logs", content['log']))
 		fc = f.read()
 		f.close()
@@ -95,6 +97,7 @@ def dochpasswd():
 				touchFile("r00tzUserDB",userdata)
 				status["result"] = "success"
 				logevent("user %s changed password" % session['username'])
+		print(content)
 	return json.dumps(status)
 
 
@@ -132,7 +135,7 @@ def doregister():
 		if request.is_json:
 			content = request.get_json()
 			type = getFile("r00tzSwitchType")
-			gapi = getBestGPIOHandler(type, logfunc=logevent)
+			gapi = r00tsIoTGPIOProxy(type, logfunc=logevent)
 			rapi = r00tsIOTAPI(apicallupdate=lambda:gapi.led_blink("cloudapi"))
 			x = rapi.apiRegisterHouse(content["username"],  content["password"], content["first"],  content["last"],  content["address"],  content["city"],  content["state"],  content["phone"])
 			if x["result"] == "success":
@@ -140,6 +143,7 @@ def doregister():
 				if x["result"] == "success":
 					touchFile("r00tzRegistered",x["house_id"])
 					x = rapi.apiRegisterSwitch(type, content["switch_name"])
+					print(x)
 					if x["result"] == "success":
 						touchFile("r00tzSwitchID",x["switch_id"])
 						status="success"
@@ -153,7 +157,7 @@ def doregisterSwitch():
 		if request.is_json:
 			content = request.get_json()
 			type = getFile("r00tzSwitchType")
-			gapi = getBestGPIOHandler(type, logfunc=logevent)
+			gapi = r00tsIoTGPIOProxy(type, logfunc=logevent)
 			rapi = r00tsIOTAPI(apicallupdate=lambda:gapi.led_blink("cloudapi"))
 			x = rapi.apiLogin(content["username"],content["password"]);
 			if x["result"] == "success":
@@ -201,8 +205,9 @@ def dolights():
 			content = request.get_json()
 			home = getFile("r00tzRegistered")
 			switch = getFile("r00tzSwitchID")
-			gapi = getBestGPIOHandler(type, logfunc=logevent)
+			gapi = r00tsIoTGPIOProxy(type, logfunc=logevent)
 			rapi = r00tsIOTAPI(house_id=home,apicallupdate=lambda:gapi.led_blink("cloudapi"))
+			print(content)
 			if content['basicstate'] == "ON":
 				touchFile("r00tzSwitchOn")
 				cc = getFile("r00tzSwitchColor")
@@ -273,11 +278,9 @@ def dologout():
 		logevent("user logout event")
 	return redirect(url_for('dohome'))
 
-
+Path(os.path.join("logs","switchlog.txt")).touch()
 app.config['DEBUG'] = True
 app.secret_key = "any random string" #;)
-Path(os.path.join("logs","switchlog.txt")).touch()
-
 if __name__ == "__main__":
 	app.run()
 

@@ -12,7 +12,7 @@ from util import *
 USE_TLS = False
 
 class r00tsIOTAPI():
-	def __init__(self, host="localhost", port=5001, house_id=None, apicallupdate=lambda: None):
+	def __init__(self, host="192.168.1.13", port=5001, house_id=None, apicallupdate=lambda: None):
 		self.host = host
 		self.port = port
 		self.apicallupdate = apicallupdate
@@ -24,10 +24,15 @@ class r00tsIOTAPI():
 
 	def api_request(self, api, data):
 		ep = "%s/api/%s" % (self.api_host_url ,api)
-		r = requests.post(url = ep, json = data, verify=False)
-		self.apicallupdate()
-		return r.json()
-
+		print(data)
+		try:
+			r = requests.post(url = ep, json = data, verify=False)
+			self.apicallupdate()
+			return r.json()
+		except requests.exceptions.ConnectionError:
+			return {"result":"failure"}
+	
+	
 	def apiLogin(self, username,password):
 		ret  = self.api_request("login", {"username":username,"password":password})
 		if "house_id" in ret:
