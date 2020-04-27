@@ -7,7 +7,7 @@ import os
 import os.path as path
 from pathlib import Path
 import time
-from update_switch_status import *
+from r00tsCloudApi import *
 from util import *
 from werkzeug.utils import secure_filename
 from r00tzGPIOProxy import *

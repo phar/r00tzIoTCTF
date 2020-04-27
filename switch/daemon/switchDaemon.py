@@ -4,7 +4,6 @@ import os
 os.chdir("/home/pi/switch")
 sys.path.insert(0, "/home/pi/switch")
 from r00tzgpio import *
-from update_switch_status import *
 from util import *
 import time
 from util import *
