@@ -1,6 +1,6 @@
 
 
-
+<pre>
 installation on image
 
 switch:
@@ -51,3 +51,4 @@ TODO test offline registration for switch with null hose ID
 TODO configuration for cloud hostname, cloud heartbeat frequency
 TODO finish up factory reset
 TODO test factory reset
+</pre>
