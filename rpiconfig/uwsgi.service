@@ -1,0 +1,12 @@
+[Unit]
+Description=uWSGI Service
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/home/pi/switch/
+ExecStart=/usr/local/bin/uwsgi --ini /home/pi/switch/uwsgi.ini
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,18 @@
+[uwsgi]
+chdir = /home/pi/switch
+module = r00tz_Cloudz:app
+
+master = true
+processes = 1
+threads = 2
+plugins=python3
+
+uid = www-data
+gid = www-data
+
+socket = /tmp/r00tz_Lights.sock
+chmod-socket = 664
+vacuum = true
+
+die-on-term = true
+logto = /var/log/uwsgi/%n.log
