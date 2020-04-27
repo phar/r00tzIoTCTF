@@ -8,6 +8,7 @@ MYFILELOCK = Lock()
 
 def touchFile(file, contents=None):
 	with MYFILELOCK:
+		os.umask(0) #dirty
 		f = open(os.path.join("configs", file),"w")
 		ret =  json.dump(contents,f)
 		f.close()

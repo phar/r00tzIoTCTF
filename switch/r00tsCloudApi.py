@@ -5,7 +5,6 @@ import os
 import os.path as path
 from pathlib import Path
 import json
-from r00tzgpio import *
 from util import *
 
 
@@ -154,4 +153,5 @@ if __name__ == "__main__":
 				print("factory reset, but not actually applied")
 			if ret['button1'] == True:
 				print("i still dont know what this button does yet")
+
 

@@ -65,6 +65,7 @@ except OSError:
     if os.path.exists(server_address):
         raise
 
+os.umask(0)
 sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 sock.bind(server_address)
 sock.listen(1)
@@ -104,6 +105,7 @@ def toggle_relay():
 
 
 def main_program():
+	global relaystate
 	CHECK_SWITCH_INTERVAL = 20
 	CHECK_SWITCH_LAST_TIME = 0
 	CHECK_UPDATE_INTERVAL = (60 * 60) * 15
@@ -133,6 +135,26 @@ def main_program():
 			connection.close()
 		else:
 
+
+			if existsFile("r00tzSwitchOn"):
+				if relaystate == 0:
+					gapi = getBestGPIOHandler(getFile("r00tzSwitchType"))
+					rapi = r00tsIOTAPI(house_id=getFile("r00tzRegistered"),apicallupdate=lambda:gapi.led_blink("cloudapi"))
+					gapi.led_on("relay_led")
+					gapi.relay_on()
+					rapi.apiSetStatus(getFile("r00tzSwitchID"),"ON")
+					relaystate = 1
+			else:
+				if relaystate == 1:
+					gapi = getBestGPIOHandler(getFile("r00tzSwitchType"))
+					rapi = r00tsIOTAPI(house_id=getFile("r00tzRegistered"),apicallupdate=lambda:gapi.led_blink("cloudapi"))
+					gapi.led_off("relay_led")
+					gapi.relay_off()
+					rapi.apiSetStatus(getFile("r00tzSwitchID"),"OFF")
+					relaystate = 0
+
+
+
 			if existsFile("r00tzRegistered"):
 				gapi = getBestGPIOHandler(getFile("r00tzSwitchType"))
 				rapi = r00tsIOTAPI(house_id=getFile("r00tzRegistered"),apicallupdate=lambda:gapi.led_blink("cloudapi"))
@@ -142,10 +164,9 @@ def main_program():
 					if(ret["result"] == "success"):
 						status = json.loads(ret['status'][2])
 						if status["basicstate"] == "ON":
-							gapi.led_on("relay_led")
-							gapi.relay_on()
+							touchFile("r00tzSwitchOn")
 						else:
-							gapi.led_off("relay_led")
+							cleanFile("r00tzSwitchOn")
 							gapi.relay_off()
 					CHECK_SWITCH_LAST_TIME = time.time()
 
@@ -187,6 +208,6 @@ if GPIO.input(INPUT_BUTTON_1_PIN) == BUTTON_PRESSED_STATE:
 			time.sleep(1)
 		#reboot
 		
-with daemon.DaemonContext():
-	main_program()
+#with daemon.DaemonContext():
+main_program()
  

@@ -41,7 +41,9 @@ def context_proc():
 	fscr.close()
 	fsty.close()
 	return {**session , **customstuff}
-	
+
+	#return session.copy().update(customstuff)	
+
 	
 def logevent(eventstring):
 	print(eventstring) #fixme remove me
@@ -226,7 +228,7 @@ def dolights():
 				touchFile("r00tzSwitchColor",{"channelred":red,"channelgreen":green,"channelblue":blue})
 			elif content['basicstate'] == "OFF":
 				cleanFile("r00tzSwitchOn")
-			rapi.apiSetStatus(switch,content['basicstate'],red,green,blue)
+			ret = rapi.apiSetStatus(switch,content['basicstate'],red,green,blue)
 			return json.dumps({"type":type,"channelred":red,"channelgreen":green,"channelblue":blue})
 	else:
 		status="success"
@@ -243,6 +245,7 @@ def dolights():
 		blue = c["channelblue"]
 		return json.dumps({"type":type, "basicstate":state, "channelred":red,"channelgreen":green,"channelblue":blue})
 
+	print(json.dumps({"type":type, "basicstate":state}))
 	return json.dumps({"type":type, "basicstate":state})
 	
 	
@@ -282,7 +285,7 @@ Path(os.path.join("logs","switchlog.txt")).touch()
 app.config['DEBUG'] = True
 app.secret_key = "any random string" #;)
 if __name__ == "__main__":
-	app.run()
+	app.run(host= '0.0.0.0',port=5000)
 
 
 
