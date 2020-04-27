@@ -5,7 +5,6 @@ module = r00tz_Cloudz:app
 master = true
 processes = 1
 threads = 2
-plugins=python3
 
 uid = www-data
 gid = www-data

@@ -361,3 +361,7 @@
 1587687298.1814542	dmx_gpio_driver: led cloudapi blink with duration 0.050000
 1587687304.9658089	dmx_gpio_driver: led cloudapi blink with duration 0.050000
 1587687309.46978	dmx_gpio_driver: led cloudapi blink with duration 0.050000
+1588012037.4952261	proxy: led cloudapi blink with duration 0.050000
+1588012037.973973	proxy: led cloudapi blink with duration 0.050000
+1588012133.7977972	proxy: led cloudapi blink with duration 0.050000
+1588012138.1948311	proxy: led cloudapi blink with duration 0.050000

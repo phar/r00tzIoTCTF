@@ -11,9 +11,10 @@ from util import *
 USE_TLS = False
 
 class r00tsIOTAPI():
-	def __init__(self, host="192.168.1.13", port=5001, house_id=None, apicallupdate=lambda: None):
-		self.host = host
-		self.port = port
+	def __init__(self, house_id=None, apicallupdate=lambda: None):
+		host = getFile("r00tzCloudAPIHostname")
+		self.host = host["host"]
+		self.port = host["port"]
 		self.apicallupdate = apicallupdate
 		if USE_TLS:
 			self.api_host_url = "https://%s:%d" % (self.host, self.port)
@@ -22,15 +23,18 @@ class r00tsIOTAPI():
 		self.house_id = house_id
 
 	def api_request(self, api, data):
-		ep = "%s/api/%s" % (self.api_host_url ,api)
-		print(data)
-		try:
-			r = requests.post(url = ep, json = data, verify=False)
-			self.apicallupdate()
-			return r.json()
-		except requests.exceptions.ConnectionError:
-			return {"result":"failure"}
-	
+		if self.house_id != None:
+			ep = "%s/api/%s" % (self.api_host_url ,api)
+			print(ep)
+			print(data)
+			try:
+				r = requests.post(url = ep, json = data, verify=False)
+				self.apicallupdate()
+				return r.json()
+			except requests.exceptions.ConnectionError:
+				return {"result":"failure"}
+		else:
+				return {"result":"failure","reason":"we are operating in offline mode, house_id==NULL"}
 	
 	def apiLogin(self, username,password):
 		ret  = self.api_request("login", {"username":username,"password":password})
@@ -85,7 +89,6 @@ if __name__ == "__main__":
 	else:
 		rapi = r00tsIOTAPI(apicallupdate=lambda:gapi.led_blink("cloudapi"))
 		r = rapi.apiLogin(results.username,results.password);
-#	print(r)
 
 	if results.set:
 		parser.add_argument('--switch_id', action="store")

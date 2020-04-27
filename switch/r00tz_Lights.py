@@ -11,6 +11,7 @@ from r00tsCloudApi import *
 from util import *
 from werkzeug.utils import secure_filename
 from r00tzGPIOProxy import *
+import uuid
 
 app = Flask(__name__)
 
@@ -139,16 +140,22 @@ def doregister():
 			type = getFile("r00tzSwitchType")
 			gapi = r00tsIoTGPIOProxy(type, logfunc=logevent)
 			rapi = r00tsIOTAPI(apicallupdate=lambda:gapi.led_blink("cloudapi"))
-			x = rapi.apiRegisterHouse(content["username"],  content["password"], content["first"],  content["last"],  content["address"],  content["city"],  content["state"],  content["phone"])
-			if x["result"] == "success":
-				x = rapi.apiLogin(content["username"],content["password"]);
+			if content["offline"] == False:
+				x = rapi.apiRegisterHouse(content["username"],  content["password"], content["first"],  content["last"],  content["address"],  content["city"],  content["state"],  content["phone"])
 				if x["result"] == "success":
-					touchFile("r00tzRegistered",x["house_id"])
-					x = rapi.apiRegisterSwitch(type, content["switch_name"])
-					print(x)
+					x = rapi.apiLogin(content["username"],content["password"]);
 					if x["result"] == "success":
-						touchFile("r00tzSwitchID",x["switch_id"])
-						status="success"
+						touchFile("r00tzRegistered",x["house_id"])
+						x = rapi.apiRegisterSwitch(type, content["switch_name"])
+						print(x)
+						if x["result"] == "success":
+							touchFile("r00tzSwitchID",x["switch_id"])
+							status="success"
+			else:
+				touchFile("r00tzRegistered",None)
+				touchFile("r00tzSwitchID",str(uuid.uuid4()))
+				status="success"
+
 	return json.dumps({"status":status})
 
 
@@ -157,18 +164,21 @@ def doregisterSwitch():
 	status="failure"
 	if request.method == 'POST':
 		if request.is_json:
-			content = request.get_json()
-			type = getFile("r00tzSwitchType")
-			gapi = r00tsIoTGPIOProxy(type, logfunc=logevent)
-			rapi = r00tsIOTAPI(apicallupdate=lambda:gapi.led_blink("cloudapi"))
-			x = rapi.apiLogin(content["username"],content["password"]);
-			if x["result"] == "success":
-				touchFile("r00tzRegistered",x["house_id"])
-				x = rapi.apiRegisterSwitch(content["switch_name"])
+			if(existsFile("r00tzRegistered")):
+				content = request.get_json()
+				type = getFile("r00tzSwitchType")
+				gapi = r00tsIoTGPIOProxy(type, logfunc=logevent)
+				rapi = r00tsIOTAPI(apicallupdate=lambda:gapi.led_blink("cloudapi"))
+				x = rapi.apiLogin(content["username"],content["password"]);
 				if x["result"] == "success":
-					touchFile("r00tzSwitchID",x["switch_id"])
-					touchFile("r00tzSwitchName",x["switch_name"])
-					status="success"
+					touchFile("r00tzRegistered",x["house_id"])
+					x = rapi.apiRegisterSwitch(content["switch_name"])
+					if x["result"] == "success":
+						touchFile("r00tzSwitchID",x["switch_id"])
+						touchFile("r00tzSwitchName",x["switch_name"])
+						status="success"
+			else:
+					return json.dumps({"status":status, "reason":"this switch is already registered to a platform"})
 	return json.dumps({"status":status})
 
 

@@ -1,7 +1,7 @@
 <html>
    <head></head>
    <script>
-	  function doregister() {
+	  function doregister(offlineregister) {
 		  var username = document.getElementById("user2").value;
 		  var confirmpass = document.getElementById("pass2r").value;
 		  var password = document.getElementById("pass2").value;
@@ -29,6 +29,7 @@
 									   "address":document.getElementById("address").value,
 									   "city":document.getElementById("city").value,
 									   "state":document.getElementById("state").value,
+									   "offline":offlineregister,
 									   }));
 		  }else{
 			  alert("password and confirmation passwords do not match!")
@@ -62,7 +63,7 @@
    </script>
    <body>
 	   <center>
-		<img width="25%" height="25%" src="images/logo.png">
+		<img  src="images/logo.png">
 	   <br>
 	   <br>
 	   </center>
@@ -138,7 +139,7 @@
 				   <td><input id="state" type="text" name="state"></td>
 				</tr>
 				<tr>
-				   <td colspan=2 align="right"><input onclick="doregister();" type="button" value="Register User"></td>
+				   <td><input onclick="doregister(1);" type="button" value="Register User"></td><td><input onclick="doregister(0);" type="button" value="Register User"></td>
 				</tr>
          </table>
       </center>

@@ -142,11 +142,11 @@
 					if (arrayItem[2] == "switch"){
 						c1.innerHTML =  arrayItem[1];
 						if(state["basicstate"] == "ON"){
-							c3.innerHTML='<img id=\''+arrayItem[0]+'\' width="25%" height="25%" src="/images/switch-on.png">';
+							c3.innerHTML='<img id=\''+arrayItem[0]+'\' src="/images/switch-on-sm.png">';
 							c2.innerHTML = "ON";
 							document.getElementById(arrayItem[0]).onclick = function() { switchOff(home_id,arrayItem[0]); };
 						}else{
-							c3.innerHTML='<img id=\''+arrayItem[0]+'\' width="25%" height="25%" src="/images/switch-off.png">';
+							c3.innerHTML='<img id=\''+arrayItem[0]+'\' src="/images/switch-off-sm.png">';
 							c2.innerHTML = "OFF";
 							document.getElementById(arrayItem[0]).onclick = function() { switchOn(home_id,arrayItem[0]); };
 						}
@@ -155,11 +155,11 @@
 						c4.innerHTML = '<div align="center" class="color-box" id=\''+arrayItem[0]+'_c\'></div>';
 						var c = document.getElementById(arrayItem[0]+'_c');
 						if(state["basicstate"] == "ON"){
-							c3.innerHTML='<img id=\''+arrayItem[0]+'\' width="25%" height="25%" src="/images/switch-on.png">';
+							c3.innerHTML='<img id=\''+arrayItem[0]+'\'  src="/images/switch-on-sm.png">';
 							c2.innerHTML = "ON";
 							document.getElementById(arrayItem[0]).onclick = function() { switchOff(home_id,arrayItem[0]); };
 						}else{
-							c3.innerHTML='<img id=\''+arrayItem[0]+'\' width="25%" height="25%" src="/images/switch-off.png">';
+							c3.innerHTML='<img id=\''+arrayItem[0]+'\'  src="/images/switch-off-sm.png">';
 							c2.innerHTML = "OFF";
 							document.getElementById(arrayItem[0]).onclick = function() { switchOn(home_id,arrayItem[0]); };
 						}
