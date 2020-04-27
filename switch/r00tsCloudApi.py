@@ -30,8 +30,9 @@ class r00tsIOTAPI():
 			try:
 				r = requests.post(url = ep, json = data, verify=False)
 				self.apicallupdate()
+				print(r)
 				return r.json()
-			except requests.exceptions.ConnectionError:
+			except: #more general failure handler 
 				return {"result":"failure"}
 		else:
 				return {"result":"failure","reason":"we are operating in offline mode, house_id==NULL"}
