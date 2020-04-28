@@ -1,8 +1,9 @@
 #import daemon
 import sys
 import os
-os.chdir("/home/pi/switch")
-sys.path.insert(0, "/home/pi/switch")
+HOMEPATH = "/home/pi/switch" #FIXME
+os.chdir(HOMEPATH)
+sys.path.insert(0, HOMEPATH)
 from r00tzgpio import *
 from util import *
 import time
@@ -12,6 +13,8 @@ import struct
 import json
 import socket
 import select
+
+
 
 server_address = '/tmp/r00tzGPIOShimSocket'
 
@@ -75,7 +78,15 @@ def resetpress(arg):
 
 	print("resetpress")
 
+BUTTONMAP = {"factory_reset":INPUT_BUTTON_0_PIN,
+		"switch":INPUT_BUTTON_1_PIN}
 
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+
+for n,b in BUTTONMAP.items():
+	GPIO.setup(b, GPIO.IN)
+	
 if BUTTON_PRESSED_STATE == 0:
 	GPIO.add_event_detect(INPUT_BUTTON_0_PIN, GPIO.FALLING, callback = switchbtn_event, bouncetime = 500)
 	GPIO.add_event_detect(INPUT_BUTTON_1_PIN, GPIO.FALLING, callback = resetpress, bouncetime = 500)
@@ -197,8 +208,11 @@ if GPIO.input(INPUT_BUTTON_1_PIN) == BUTTON_PRESSED_STATE:
 	if aborted == 0:
 		print("factory reset condition")
 		gapi.led_on("firmware")
-		time.sleep(5)
-		
+
+		factoryfile = os.path.join(HOMEPATH,"factory_reset.tbz")
+		os.system("rm -rf %s" % HOMEPATH)
+		os.system("tar -xjvpf %s --overwrite" % factoryfile)
+
 		while(GPIO.input(INPUT_BUTTON_1_PIN) != BUTTON_PRESSED_STATE):
 			print("reboot required")
 			gapi.led_on("firmware")
@@ -206,6 +220,7 @@ if GPIO.input(INPUT_BUTTON_1_PIN) == BUTTON_PRESSED_STATE:
 			gapi.led_off("firmware")
 			time.sleep(1)
 		#reboot
+		os.system('reboot')
 		
 #with daemon.DaemonContext():
 main_program()

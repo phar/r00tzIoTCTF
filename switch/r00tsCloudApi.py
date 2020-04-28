@@ -108,7 +108,6 @@ if __name__ == "__main__":
 		ret = rapi.apiGetStatus(sgresults.switch_id)
 		print(ret)
 		if sgresults.updatestatus:
-#			print(ret["status"][0])
 			if ret["status"][1] == "ON":
 				gapi.led_on("relay_led")
 				gapi.relay_on()

@@ -14,9 +14,7 @@ BUTTON_PRESSED_STATE =  0
 BUTTON_RELEASED_STATE = 1
 
 
-BUTTONMAP = {"factory_reset":INPUT_BUTTON_0_PIN,
-			"switch":INPUT_BUTTON_1_PIN}
-			
+		
 LEDMAP = {	"status0":STATUS_LED_0_PIN,
 			"cloudapi":STATUS_LED_1_PIN,
 			"firmware":STATUS_LED_2_PIN,
@@ -30,7 +28,7 @@ class r00tsIoTGPIOBase():
 	def __init__(self,  switchpress=lambda: None,resetpress=lambda: None,logfunc=lambda x: lmbdaproxy(x)):
 		self.name = "base"
 		self.leds = LEDMAP
-		self.buttons = BUTTONMAP
+#		self.buttons = BUTTONMAP
 #		self.logger =
 		self.logfunc =  logfunc
 		self.switchpress = switchpress
@@ -43,17 +41,17 @@ class r00tsIoTGPIOBase():
 	def logger(self, msg):
 		self.logfunc("%s: %s" % (self.name,msg))
 
-	def get_buttons(self):
-			buttons = []
-			for n,b in self.buttons.items():
-				buttons.append(False)
-			return buttons
-
-	def get_buttonsDict(self):
-		buttons = {}
-		for n,b in self.buttons.items():
-			buttons[n] = False
-		return buttons
+#	def get_buttons(self):
+#			buttons = []
+#			for n,b in self.buttons.items():
+#				buttons.append(False)
+#			return buttons
+#
+#	def get_buttonsDict(self):
+#		buttons = {}
+#		for n,b in self.buttons.items():
+#			buttons[n] = False
+#		return buttons
 		
 	def led_on(self,led):
 		self.logger("led %s on" % led)
@@ -116,8 +114,8 @@ class r00tsIoTRPiGPIO(r00tsIoTGPIOBase):
 		for n,l in self.leds.items():
 			GPIO.setup(l, GPIO.OUT)
 			
-		for n,b in self.buttons.items():
-			GPIO.setup(b, GPIO.IN)
+#		for n,b in self.buttons.items():
+#			GPIO.setup(b, GPIO.IN)
 			
 		GPIO.setup(IOT_SWITCH_PIN, GPIO.OUT)
 		
@@ -135,26 +133,26 @@ class r00tsIoTRPiGPIO(r00tsIoTGPIOBase):
 				self.led_on(n)
 			else:
 				self.led_off(n)
-
-	def get_buttons(self):
-		buttons = []
-		for n,b in self.buttons.items():
-			i = GPIO.input(b)
-			if i == self.BUTTON_PRESSED_STATE:
-				buttons.append(True)
-			else:
-				buttons.append(False)
-		return buttons
-
-	def get_buttonsDict(self):
-		buttons = {}
-		for n,b in self.buttons.items():
-			i = GPIO.input(b)
-			if i == self.BUTTON_PRESSED_STATE:
-				buttons[n] = True
-			else:
-				buttons[n] = False
-		return buttons
+#
+#	def get_buttons(self):
+#		buttons = []
+#		for n,b in self.buttons.items():
+#			i = GPIO.input(b)
+#			if i == self.BUTTON_PRESSED_STATE:
+#				buttons.append(True)
+#			else:
+#				buttons.append(False)
+#		return buttons
+#
+#	def get_buttonsDict(self):
+#		buttons = {}
+#		for n,b in self.buttons.items():
+#			i = GPIO.input(b)
+#			if i == self.BUTTON_PRESSED_STATE:
+#				buttons[n] = True
+#			else:
+#				buttons[n] = False
+#		return buttons
 
 	def led_on(self,led):
 		GPIO.output(self.leds[led], self.LED_ON_STATE)
@@ -195,4 +193,4 @@ if __name__ == "__main__":
 	f = getBestGPIOHandler("switch", logfunc=lambda x: lmbdaproxy(x))
 	while(1):
 		f.led_blink("status0",)
-		print(f.get_buttonsDict())
+#		print(f.get_buttonsDict())
