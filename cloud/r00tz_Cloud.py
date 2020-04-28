@@ -162,6 +162,7 @@ def doregister():
 		conn = getdbconn()
 		c = conn.cursor()
 		content = request.get_json()
+		print(content)
 		try:
 			house_id = str(uuid.uuid4()) #fixme, make this a sequential uuid value
 			c.execute("insert into homes (house_id,username, password, admin, first, last, address, city, state, phone) values (?,?,?,0,?,?,?,?,?,?)" , (house_id,content["username"], content["password"], content["first"], content["last"], content["address"],content["city"],content["state"],content["phone"]))

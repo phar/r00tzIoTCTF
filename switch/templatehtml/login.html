@@ -12,7 +12,7 @@
 				if(state["result"] == "success"){
 					document.location = "/";
 				}else{
-					//fixme throw an error
+					alert("bad username and password combination.")
 				}
 			}
 		   }
@@ -37,4 +37,11 @@
 		</table>
 		</center>
     </body>
+	<script>
+		document.getElementById("pass").onkeydown = function(e){
+		   if(e.keyCode == 13){
+			  dologin();
+		   }
+		};
+	</script>
 </html>

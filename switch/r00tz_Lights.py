@@ -63,7 +63,6 @@ def dogetlog():
 	status = "failure"
 	if request.is_json:
 		content = request.get_json()
-#		print(content)
 		f = open(os.path.join("logs", content['log']))
 		fc = f.read()
 		f.close()
@@ -100,7 +99,6 @@ def dochpasswd():
 				touchFile("r00tzUserDB",userdata)
 				status["result"] = "success"
 				logevent("user %s changed password" % session['username'])
-		print(content)
 	return json.dumps(status)
 
 
@@ -112,6 +110,9 @@ def dobackupdownload():
 	zf.writestr(os.path.join("configs","r00tzSwitchName"),json.dumps(getFile("r00tzSwitchName")))
 	zf.writestr(os.path.join("configs","r00tzSwitchID"),json.dumps(getFile("r00tzSwitchID")))
 	zf.writestr(os.path.join("configs","r00tzRegistered"),json.dumps(getFile("r00tzRegistered")))
+	zf.writestr(os.path.join("configs","r00tzCloudAPIHostname"),json.dumps(getFile("r00tzCloudAPIHostname")))
+	zf.writestr(os.path.join("configs","r00tzSwitchColor"),json.dumps(getFile("r00tzSwitchColor")))
+	zf.writestr(os.path.join("configs","r00tzSwitchType"),json.dumps(getFile("r00tzSwitchType")))
 	zf.close()
 	return Response(file_like_object.getvalue(),mimetype="application/zip",headers={"Content-disposition":"attachment; filename=backup.config"})
 
@@ -143,11 +144,11 @@ def doregister():
 			if content["offline"] == False:
 				x = rapi.apiRegisterHouse(content["username"],  content["password"], content["first"],  content["last"],  content["address"],  content["city"],  content["state"],  content["phone"])
 				if x["result"] == "success":
+					touchFile("r00tzRegistered",x["house_id"])
+					rapi = r00tsIOTAPI(apicallupdate=lambda:gapi.led_blink("cloudapi")) #in this case we grab a new object because the house ID has changed
 					x = rapi.apiLogin(content["username"],content["password"]);
 					if x["result"] == "success":
-						touchFile("r00tzRegistered",x["house_id"])
 						x = rapi.apiRegisterSwitch(type, content["switch_name"])
-						print(x)
 						if x["result"] == "success":
 							touchFile("r00tzSwitchID",x["switch_id"])
 							status="success"
@@ -219,7 +220,6 @@ def dolights():
 			switch = getFile("r00tzSwitchID")
 			gapi = r00tsIoTGPIOProxy(type, logfunc=logevent)
 			rapi = r00tsIOTAPI(house_id=home,apicallupdate=lambda:gapi.led_blink("cloudapi"))
-			print(content)
 			if content['basicstate'] == "ON":
 				touchFile("r00tzSwitchOn")
 				cc = getFile("r00tzSwitchColor")
@@ -255,7 +255,6 @@ def dolights():
 		blue = c["channelblue"]
 		return json.dumps({"type":type, "basicstate":state, "channelred":red,"channelgreen":green,"channelblue":blue})
 
-	print(json.dumps({"type":type, "basicstate":state}))
 	return json.dumps({"type":type, "basicstate":state})
 	
 	

@@ -27,6 +27,7 @@
 		  xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 		  xhttp.send(JSON.stringify({"username":username,"password":password}));
 	   }
+
 	 </script>
    <body>
       <center>
@@ -44,7 +45,7 @@
                </tr>
                <tr>
                   <td>password:</td>
-                  <td><input id="pass" type="password" name="pass"></td>
+                  <td><input id="pass" type="password" name="pass" ></td>
                </tr>
                <tr>
 				   <td><input type="button" value="New User" onClick="window.location = '/register.html';"/></td>
@@ -54,4 +55,11 @@
          </table>
       </center>
    </body>
+   <script>
+	   document.getElementById("pass").onkeydown = function(e){
+		  if(e.keyCode == 13){
+			 dologin();
+		  }
+	   };
+   </script>
 </html>

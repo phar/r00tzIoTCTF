@@ -37,7 +37,9 @@ sudo chown www-data /home/$clouduser/cloud -R
 rm -rf r00tzIoTCTF
 
 
-
+#notes:
+	if you want to run them locally to test them, you will need to manually run the daemon otherwise actions taken in the cloud will never update on the switch
+and update checks will never happen
 
 
 
@@ -51,4 +53,8 @@ TODO test offline registration for switch with null hose ID
 TODO configuration for cloud hostname, cloud heartbeat frequency
 TODO finish up factory reset
 TODO test factory reset
+TODO add html template tag if the switch is running in off line mode
+TODO login pages do not login when you hit enter, should goto default javascript button
+TODO javascript should give a user alert when the api calls fail
+TODO about page on the switch should be populated with something
 </pre>

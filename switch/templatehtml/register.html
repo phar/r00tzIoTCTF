@@ -5,7 +5,7 @@
 		  var username = document.getElementById("user2").value;
 		  var confirmpass = document.getElementById("pass2r").value;
 		  var password = document.getElementById("pass2").value;
-		  if(confirmpass == password){
+		  if((confirmpass == password) | offlineregister){
 			 var xhttp = new XMLHttpRequest();
 			 xhttp.onreadystatechange = function() {
 			  if (this.readyState == 4 && this.status == 200) {
@@ -94,7 +94,7 @@
                   <td><input type="text" id="pass1" name="pass"></td>
                </tr>
                <tr>
-                  <td colspan=2 align="right"><input type="button" value="Register This Switch" onclick="registerSwitch"></td>
+                  <td colspan=2 align="right"><input type="button" value="Register This Switch" onclick="registerSwitch()"></td>
                </tr>
 				<tr>
 				   <td colspan=2><br></td>
@@ -139,7 +139,7 @@
 				   <td><input id="state" type="text" name="state"></td>
 				</tr>
 				<tr>
-				   <td><input onclick="doregister(1);" type="button" value="Register User"></td><td><input onclick="doregister(0);" type="button" value="Register User"></td>
+				   <td><input onclick="doregister(1);" type="button" value="Offline Switch"></td><td><input onclick="doregister(0);" type="button" value="Register User"></td>
 				</tr>
          </table>
       </center>

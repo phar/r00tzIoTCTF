@@ -23,16 +23,14 @@ class r00tsIOTAPI():
 		self.house_id = house_id
 
 	def api_request(self, api, data):
-		if self.house_id != None:
+		print(self.house_id)
+		if (self.house_id != None) or  api in ["register","login"]:
 			ep = "%s/api/%s" % (self.api_host_url ,api)
-			print(ep)
-			print(data)
 			try:
 				r = requests.post(url = ep, json = data, verify=False)
 				self.apicallupdate()
-				print(r)
 				return r.json()
-			except: #more general failure handler 
+			except: #more general failure handler
 				return {"result":"failure"}
 		else:
 				return {"result":"failure","reason":"we are operating in offline mode, house_id==NULL"}
