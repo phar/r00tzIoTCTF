@@ -5,6 +5,7 @@ HOMEPATH = "/home/pi/switch" #FIXME
 os.chdir(HOMEPATH)
 sys.path.insert(0, HOMEPATH)
 from r00tzgpio import *
+from r00tsCloudApi import *
 from util import *
 import time
 from util import *
