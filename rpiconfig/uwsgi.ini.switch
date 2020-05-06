@@ -14,4 +14,4 @@ chmod-socket = 664
 vacuum = true
 
 die-on-term = true
-logto = /var/log/uwsgi/%n.log
+#logto = /var/log/uwsgi/%n.log
