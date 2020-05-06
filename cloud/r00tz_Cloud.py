@@ -69,7 +69,18 @@ def dogethomes():
 		content = request.get_json()
 		c.execute("select homes.house_id, homes.username, count(status) from homes left join switch_status on homes.house_id=switch_status.house_id group by homes.house_id;")
 		status = {"result":"success", "status":c.fetchall()}
-	#	logevent(content["house_id"], "house_id %s has requested status on switch %s" % (content["house_id"], content["switch_id"]))
+		return json.dumps(status)
+
+
+@app.route("/api/getLogs", methods=['POST'])
+def dogetlogs():
+	status = {"result":"fail"}
+	if request.is_json:
+		conn = getdbconn()
+		c = conn.cursor()
+		content = request.get_json()
+		c.execute("select * from logs")
+		status = {"result":"success", "status":c.fetchall()}
 		return json.dumps(status)
 
 
@@ -238,44 +249,54 @@ def dologin():
 	conn = getdbconn()
 	c = conn.cursor()
 	status = {"result":"fail"}
+	conn = getdbconn()
 	if request.is_json:
-		conn = getdbconn()
 		c = conn.cursor()
 		content = request.get_json()
-		try:
-			c.execute("select password,house_id,admin from homes where username='%s'; " % (content['username'],)) #injection
-			row = c.fetchone()
-			if row is not None:
-				if  content['password'] == row[0]:
-					session['loggedin'] = True
-					session['house_id'] = row[1]
-					session["admin"] = row[2]
-					if  row[2]:
-						logevent(row[1], "admin %s logged in")
-					else:
-						logevent(row[1], "user %s logged in")
-						
-					status["admin"] = row[2]
-					status["house_id"] = session['house_id']
-					status["result"] = "success"
-
+		username = content['username']
+		password = content['password']
+		
+	elif request.method == 'GET':
+		username = request.args.get('username')
+		password = request.args.get('password')
+	try:
+		c.execute("select password,house_id,admin from homes where username='%s'; " % (username,)) #injection
+		row = c.fetchone()
+		if row is not None:
+			if  password == row[0]:
+				session['loggedin'] = True
+				session['house_id'] = row[1]
+				session["admin"] = row[2]
+				if  row[2]:
+					logevent(row[1], "admin %s logged in",username)
 				else:
-					status["error"] =  "user %s  failed to logged in" % content['usernamne']
-					logevent(row[1],status["error"])
+					logevent(row[1], "user %s logged in",username)
+					
+				status["admin"] = row[2]
+				status["house_id"] = session['house_id']
+				status["result"] = "success"
+
 			else:
-				status["error"] =  "user is not found .. probably"
-				logevent(None,status["error"])
-		except:
-			status["error"] ="error during login attempt"
-			logevent(None, status["error"])
+				status["error"] =  "user %s  failed to logged in" % username
+				logevent(row[1],status["error"])
+		else:
+			status["error"] =  "user is not found .. probably"
+			logevent(None,status["error"])
+	except:
+		status["error"] ="error during login attempt"
+		logevent(None, status["error"])
+		
+	if request.method == 'GET':
+		return redirect("/cloud/logview.html")
+		
 	return json.dumps(status)
 
 	
 def logevent(house_id, eventstring):
 	conn = getdbconn()
 	c = conn.cursor()
-#	c.execute("insert into logs (ts, house_id,logmsg) values (?,?,?);", (time.time(), house_id,eventstring))
-#	conn.commit()
+	c.execute("insert into logs (ts, house_id,logmsg) values (?,?,?);", (time.time(), house_id,eventstring))
+	conn.commit()
 
 
 def buildDB(conn):
