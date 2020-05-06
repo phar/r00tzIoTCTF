@@ -1,5 +1,5 @@
 [uwsgi]
-chdir = /home/pi/switch
+chdir = /home/pi/flaskapp
 module = r00tz_Lights:app
 
 master = true

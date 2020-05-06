@@ -15,7 +15,7 @@ sed  "s/\/home\/pi/\/home\/$switchuser/g"   r00tzIoTCTF/rpiconfig/uwsgi.ini.swit
 switch nginx:
 sudo rm /etc/nginx/sites-enabled/default
 sudo cp  r00tzIoTCTF/rpiconfig/flask_proxy  /etc/nginx/sites-enabled/
-sudo ln -s /etc/nginx/sites-available/flask_proxy /etc/nginx/sites-enabled/flask_proxy
+sudo ln -s /etc/nginx/sites-available/flaskapp_proxy /etc/nginx/sites-enabled/flaskapp_proxy
 sed  "s/\/home\/pi/\/home\/$switchuser/g"  r00tzIoTCTF/rpiconfig/uwsgi.service  > /tmp/uwsgi.service
 sudo cp /tmp/uwsgi.service   /etc/systemd/system/uwsgi.service
 
@@ -34,7 +34,7 @@ mv r00tzIoTCTF/cloud /home/$clouduser/flaskapp
 sed  "s/\/home\/pi/\/home\/$clouduser/g"  r00tzIoTCTF/rpiconfig/uwsgi.ini.switch   >  /home/$clouduser/flaskapp/uwsgi.ini
 sudo rm /etc/nginx/sites-enabled/default
 sudo cp  r00tzIoTCTF/rpiconfig/flask_proxy nano /etc/nginx/sites-enabled/
-sudo ln -s /etc/nginx/sites-available/flask_proxy /etc/nginx/sites-enabled
+sudo ln -s /etc/nginx/sites-available/flaskapp_proxy /etc/nginx/sites-enabled/flaskapp_proxy
 sed  "s/\/home\/pi/\/home\/$clouduser/g"  r00tzIoTCTF/rpiconfig/uwsgi.service  > /tmp/uwsgi.service
 sudo cp /tmp/uwsgi.service   /etc/systemd/system/uwsgi.service
 sudo chown www-data /home/$clouduser/flaskapp -R
