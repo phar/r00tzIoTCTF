@@ -1,7 +1,7 @@
 #import daemon
 import sys
 import os
-HOMEPATH = "/home/pi/switch" #FIXME
+HOMEPATH = "/home/pi/flaskapp" #FIXME
 os.chdir(HOMEPATH)
 sys.path.insert(0, HOMEPATH)
 from r00tzgpio import *
@@ -119,7 +119,7 @@ def main_program():
 	global relaystate
 	CHECK_SWITCH_INTERVAL = 20
 	CHECK_SWITCH_LAST_TIME = 0
-	CHECK_UPDATE_INTERVAL = (60 * 60) * 15
+	CHECK_UPDATE_INTERVAL = (60 * 60) * 15 #fixme, put these in configs
 	CHECK_UPDATE_LAST_TIME = 0
 	
 
@@ -222,7 +222,10 @@ if GPIO.input(INPUT_BUTTON_1_PIN) == BUTTON_PRESSED_STATE:
 			time.sleep(1)
 		#reboot
 		os.system('reboot')
-		
-#with daemon.DaemonContext():
-main_program()
- 
+	
+	
+if len(sys.argv) == 1: #any argument will provide an interactive mode
+	with daemon.DaemonContext():
+		main_program()
+ else:
+ 	   main_program()

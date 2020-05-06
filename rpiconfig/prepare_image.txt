@@ -17,6 +17,7 @@ apt-get upgrade
 sudo apt install nginx
 sudo apt-get install python3-pip
 sudo pip3 install flask uwsgi
+sudo pip3 install pathlib
 sudo useradd -m r00tzIoT
 echo "r00tz123" | passwd r00tzIoT --stdin
 mkdir /home/r00tzI0t/flaskapp

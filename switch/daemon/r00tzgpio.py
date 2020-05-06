@@ -28,8 +28,6 @@ class r00tsIoTGPIOBase():
 	def __init__(self,  switchpress=lambda: None,resetpress=lambda: None,logfunc=lambda x: lmbdaproxy(x)):
 		self.name = "base"
 		self.leds = LEDMAP
-#		self.buttons = BUTTONMAP
-#		self.logger =
 		self.logfunc =  logfunc
 		self.switchpress = switchpress
 		self.resetpress = resetpress
@@ -40,18 +38,6 @@ class r00tsIoTGPIOBase():
 
 	def logger(self, msg):
 		self.logfunc("%s: %s" % (self.name,msg))
-
-#	def get_buttons(self):
-#			buttons = []
-#			for n,b in self.buttons.items():
-#				buttons.append(False)
-#			return buttons
-#
-#	def get_buttonsDict(self):
-#		buttons = {}
-#		for n,b in self.buttons.items():
-#			buttons[n] = False
-#		return buttons
 		
 	def led_on(self,led):
 		self.logger("led %s on" % led)
@@ -80,10 +66,10 @@ def getBestGPIOHandler(type, switchpress=lambda: None,resetpress=lambda: None, l
 	ioset = [r00tsIoTNull,r00tsIoTDMX,r00tsIoTRPiGPIO]
 	print(type)
 	if type == "switch":
-#		try:
+		try:
 			gapi  = r00tsIoTRPiGPIO(switchpress=switchpress,resetpress=resetpress,logfunc=logfunc)
-#		except:
-#			gapi  = r00tsIoTNull(switchpress=switchpress,resetpress=resetpress,logfunc=logfunc)
+		except:
+			gapi  = r00tsIoTNull(switchpress=switchpress,resetpress=resetpress,logfunc=logfunc)
 	elif type == "dmxswitch":
 		try:
 			gapi  = r00tsIoTDMX(switchpress=switchpress,resetpress=resetpress,logfunc=logfunc)
@@ -114,18 +100,8 @@ class r00tsIoTRPiGPIO(r00tsIoTGPIOBase):
 		for n,l in self.leds.items():
 			GPIO.setup(l, GPIO.OUT)
 			
-#		for n,b in self.buttons.items():
-#			GPIO.setup(b, GPIO.IN)
-			
 		GPIO.setup(IOT_SWITCH_PIN, GPIO.OUT)
-		
-#		if self.BUTTON_PRESSED_STATE == 0:
-#			GPIO.add_event_detect(INPUT_BUTTON_0_PIN, GPIO.FALLING, callback = self.switchpress, bouncetime = 100)
-#			GPIO.add_event_detect(INPUT_BUTTON_1_PIN, GPIO.FALLING, callback = self.resetpress, bouncetime = 100)
-#		else:
-#			GPIO.add_event_detect(INPUT_BUTTON_0_PIN, GPIO.RISING, callback = self.switchpress, bouncetime = 100)
-#			GPIO.add_event_detect(INPUT_BUTTON_1_PIN, GPIO.RISING, callback = self.resetpress, bouncetime = 100)
-#
+
 
 	def all_leds_state(self,state):
 		for n,b in self.leds.items():
@@ -133,26 +109,6 @@ class r00tsIoTRPiGPIO(r00tsIoTGPIOBase):
 				self.led_on(n)
 			else:
 				self.led_off(n)
-#
-#	def get_buttons(self):
-#		buttons = []
-#		for n,b in self.buttons.items():
-#			i = GPIO.input(b)
-#			if i == self.BUTTON_PRESSED_STATE:
-#				buttons.append(True)
-#			else:
-#				buttons.append(False)
-#		return buttons
-#
-#	def get_buttonsDict(self):
-#		buttons = {}
-#		for n,b in self.buttons.items():
-#			i = GPIO.input(b)
-#			if i == self.BUTTON_PRESSED_STATE:
-#				buttons[n] = True
-#			else:
-#				buttons[n] = False
-#		return buttons
 
 	def led_on(self,led):
 		GPIO.output(self.leds[led], self.LED_ON_STATE)
