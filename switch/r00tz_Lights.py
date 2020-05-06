@@ -42,16 +42,12 @@ def context_proc():
 	fscr.close()
 	fsty.close()
 	return {**session , **customstuff}
-
-	#return session.copy().update(customstuff)	
-
 	
 def logevent(eventstring):
 	print(eventstring) #fixme remove me
 	f  = open(os.path.join("logs","switchlog.txt"),"a")
 	f.write("%s\t%s\r\n" % (time.time(), eventstring))
 	f.close()
-
 
 @app.route("/images/<filename>")
 def dogetimages(filename):
@@ -68,7 +64,6 @@ def dogetlog():
 		f.close()
 		return json.dumps({"status":status,"data":fc})
 	return json.dumps({"status":status})
-
 
 @app.route("/api/login",methods=['POST','GET'])
 def dologin():
@@ -183,11 +178,11 @@ def doregisterSwitch():
 	return json.dumps({"status":status})
 
 
-@app.route("/factory",methods=['POST','GET'])
-def factorydefault(): #FIXME not finished
-	status="failure"
-	#factory reset
-	
+#@app.route("/factory",methods=['POST','GET']) # i think this is overkill, im dropping this flaw
+#def factorydefault(): #FIXME not finished
+#	status="failure"
+#	#factory reset
+#
 
 @app.route("/restore",methods=['POST','GET'])
 def dorestore(): #FIXME not finished
