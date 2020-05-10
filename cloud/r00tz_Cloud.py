@@ -79,7 +79,7 @@ def dogetlogs():
 		conn = getdbconn()
 		c = conn.cursor()
 		content = request.get_json()
-		c.execute("select * from logs order by ts desc limit 30;")
+		c.execute("select * from logs order by ts desc limit 30;`")
 		status = {"result":"success", "status":c.fetchall()}
 		return json.dumps(status)
 

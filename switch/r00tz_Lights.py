@@ -178,7 +178,7 @@ def doregisterSwitch():
 	return json.dumps({"status":status})
 
 
-#@app.route("/factory",methods=['POST','GET']) # i think this is overkill, im dropping this flaw
+#@app.route("/factory",methods=['POST','GET']) # i think this is overkill, im dropping this flaw`
 #def factorydefault(): #FIXME not finished
 #	status="failure"
 #	#factory reset

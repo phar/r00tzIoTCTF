@@ -1,7 +1,10 @@
 
 from faker import Faker
 from faker.providers import internet
-from update_switch_status import *	
+try:
+	from update_switch_status import *	
+except:
+	print("you'll need the library from the switch to do this, didnt want to store this util on the switch")
 import random
 fake = Faker()
 

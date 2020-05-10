@@ -20,7 +20,7 @@ sed  "s/\/home\/pi/\/home\/$switchuser/g"  r00tzIoTCTF/rpiconfig/uwsgi.service  
 sudo cp /tmp/uwsgi.service   /etc/systemd/system/uwsgi.service
 
 switch finish:
-sudo chown www-data /home/$switchuser/flaskapp -R
+sudo chown www-data.www-data /home/$switchuser/flaskapp -R
 tar -cjvpf factory_reset.tbz flaskapp
 rm -rf r00tzIoTCTF
 
@@ -29,15 +29,23 @@ cloud
 git clone https://github.com/phar/r00tzIoTCTF
 create a cloud user
 
-export switchuser=[clouduser]
+export clouduser=r00tzIoT
 mv r00tzIoTCTF/cloud /home/$clouduser/flaskapp
-sed  "s/\/home\/pi/\/home\/$clouduser/g"  r00tzIoTCTF/rpiconfig/uwsgi.ini.switch   >  /home/$clouduser/flaskapp/uwsgi.ini
+sed  "s/\/home\/pi/\/home\/$clouduser/g"  r00tzIoTCTF/rpiconfig/uwsgi.ini.cloud   >  /home/$clouduser/flaskapp/uwsgi.ini
 sudo rm /etc/nginx/sites-enabled/default
 sudo cp  r00tzIoTCTF/rpiconfig/flask_proxy nano /etc/nginx/sites-enabled/
 sudo ln -s /etc/nginx/sites-available/flaskapp_proxy /etc/nginx/sites-enabled/flaskapp_proxy
 sed  "s/\/home\/pi/\/home\/$clouduser/g"  r00tzIoTCTF/rpiconfig/uwsgi.service  > /tmp/uwsgi.service
 sudo cp /tmp/uwsgi.service   /etc/systemd/system/uwsgi.service
-sudo chown www-data /home/$clouduser/flaskapp -R
+
+cloud finish:
+sudo chown www-data.www-data /home/$clouduser/flaskapp -R
+#make firmware update package
+mv r00tzIoTCTF/switch r00tzIoTCTF/flaskapp
+sudo chown www-data r00tzIoTCTF/flaskapp -R
+tar --exclude='r00tzIoTCTF/flaskapp/configs' --exclude='r00tzIoTCTF/flaskapp/logs' -cjvpf /home/$clouduser/flaskapp/upgrade_package.tbz r00tzIoTCTF/flaskapp 
+sudo chown   www-data.www-data  /home/$clouduser/flaskapp/upgrade_package.tbz
+#cleanup
 rm -rf r00tzIoTCTF
 
 
