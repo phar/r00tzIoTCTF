@@ -9,7 +9,7 @@ export switchuser=r00tzIoT
 mv r00tzIoTCTF/switch /home/$switchuser/flaskapp
 sed  "s/\/home\/pi/\/home\/$switchuser/g"  /home/$switchuser/flaskapp/daemon/switchDaemon.py   >  /home/$switchuser/flaskapp/daemon/switchDaemon_written.py
 add the following line to /etc/rc.local
-/usr/bin/python3 /home/[switchuser]/flaskapp/daemon/switchDaemon_written.py
+/usr/bin/python3 /home/[switchuser]/flaskapp/daemon/switchDaemon_written.py& #note the amersand is new because daemon module flakes
 sed  "s/\/home\/pi/\/home\/$switchuser/g"   r00tzIoTCTF/rpiconfig/uwsgi.ini.switch   >  /home/$switchuser/flaskapp/uwsgi.ini
 
 switch nginx:

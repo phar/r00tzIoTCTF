@@ -1,7 +1,7 @@
 #import daemon
 import sys
 import os
-HOMEPATH = "/home/pi/flaskapp" #FIXME
+HOMEPATH = "/home/pi/flaskapp" #this line is rewritten by SED
 os.chdir(HOMEPATH)
 sys.path.insert(0, HOMEPATH)
 from r00tzgpio import *
@@ -186,6 +186,24 @@ def main_program():
 				try:
 					ret = rapi.apiCheckUpdate()
 					#fixme do update
+					
+					#download the file
+					if getFile("r00tzUseTLSFlag") == True:
+						self.api_host_url = "https://%s:%d" % (self.host, self.port)
+					else:
+						self.api_host_url = "http://%s:%d" % (self.host, self.port)
+					ep = "%s/r00tzLights.fwupdate" % (self.api_host_url)
+					localfile = "/tmp/r00tzLights.fwupdate"
+					r = requests.get(url = ep, verify=False)
+					f = open(localfile,"wb")
+					f.write(r.text)
+					f.close()
+
+					factoryfile = os.path.join(HOMEPATH,localfile)
+					os.system("rm -rf %s" % HOMEPATH)
+					os.system("tar -xjvpf %s --overwrite" % localfile)
+					os.system("sudo www-data /bin/bash update.sh")
+
 				except:
 					pass
 				print("update")
@@ -223,8 +241,8 @@ if GPIO.input(INPUT_BUTTON_1_PIN) == BUTTON_PRESSED_STATE:
 		os.system('reboot')
 	
 	
-if len(sys.argv) != 1: #any argument will provide an interactive mode
-	with daemon.DaemonContext():
-		main_program()
-else:
-	main_program()
+#if len(sys.argv) != 1: #any argument will provide an interactive mode
+#	with daemon.DaemonContext():
+#		main_program()
+#else:
+main_program()

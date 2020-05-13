@@ -1,65 +1,32 @@
-cp 2020-02-13-raspbian-buster-lite.img 2020-02-13-raspbian-buster-lite-r00tz.img
-
-sudo mkdir /mnt/img1
-sudo mount -t vfat -o loop,offset=4194304 2020-02-13-raspbian-buster-lite-r00tz.img /mnt/img1/
-touch /mnt/img1/ssh 
-umunt /mnt/img1
-
-
-sudo mkdir /mnt/img2
-#expand the image by 1GB
-sudo mount -t ext4 -o loop,offset=272629760 2020-02-13-raspbian-buster-lite-r00tz.img /mnt/img2/
-mount -tproc /proc /mnt/img2/proc
-mount -obind /dev /mnt/img2/dev
-chroot /mnt/img2
-apt-get update 
-apt-get upgrade 
+sudo apt-get install avahi-utils
 sudo apt install nginx
 sudo apt-get install python3-pip
 sudo pip3 install flask uwsgi
 sudo pip3 install pathlib
-sudo pip3 install python-daemon
-sudo useradd -m r00tzIoT
-echo "r00tz123" | passwd r00tzIoT --stdin
-mkdir /home/r00tzI0t/flaskapp
-userdel pi
-sudo chown www-data /home/r00tzIoT/flaskapp
 sudo apt install zerofree
-sudo pip3 install python-daemon
 sudo apt-get install uwsgi-plugin-python3
 sudo apt install python3-rpi.gpio
-
-#copy flask site into flask directory
-
-sudo rm /etc/nginx/sites-enabled/default
-sudo cp flaskapp_proxy to /etc/nginx/sites-available/
-sudo ln -s /etc/nginx/sites-available/flasktest_proxy /etc/nginx/sites-enabled
 sudo cp uwsgi.service /etc/systemd/system
 sudo systemctl enable uwsgi.service
 sudo apt-get install avahi-daemon
-
 pip install python-daemon #new
+
+
+sudo useradd -m r00tzIoT
+mkdir /home/r00tzI0t/flaskapp
+userdel pi
+sudo chown www-data /home/r00tzIoT/flaskapp
+
+
+
 
 #zero free image
 #unmount image
 
-#copy this base image to the cloud image, then mount the cloud image
-
-cp 2020-02-13-raspbian-buster-lite-r00tz.img  2020-02-13-raspbian-buster-lite-r00tz-cloud.img
-#expand the image by 1GB
-sudo mount -t ext4 -o loop,offset=272629760 2020-02-13-raspbian-buster-lite-r00tz-cloud.img /mnt/img2/
-mount -tproc /proc /mnt/img2/proc
-mount -obind /dev /mnt/img2/dev
-chroot /mnt/img2
 
 #disable display blanking in kernel config
 #disable display blanking in x11
 sudo apt-get install --no-install-recommends xserver-xorg
 sudo apt-get install xfce4 xfce4-terminal
 sudo apt-get install firefox-esr
-#configure x11 autostart
-#configure x11 autologin
-#configure firefox to start and full screen to localhost 
-#zero free image
-#unmount image
 
