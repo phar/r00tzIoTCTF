@@ -7,7 +7,7 @@ import os
 import os.path as path
 from pathlib import Path
 import time
-from r00tsCloudApi import *
+from r00tzCloudApi import *
 from util import *
 from werkzeug.utils import secure_filename
 from r00tzGPIOProxy import *
@@ -38,7 +38,11 @@ def context_proc():
 	swn = getFile("r00tzSwitchName")
 	swid = getFile("r00tzSwitchID")
 	hid = getFile("r00tzRegistered")
-	customstuff = {"house_id":hid,"switchid":swid,"switch_name":swn,"menustyle":fsty.read(), "menuscript":fscr.read(), "productname":PRODUCTNAME}
+	offlinestring = ""
+	if hid == None:
+		offlinestring = "***you are in offline mode, no attempt will be made to use the cloud API****"
+	cloudhost = getFile("r00tzCloudAPIHostname")
+	customstuff = {"house_id":hid,"switchid":swid,"switch_name":swn,"menustyle":fsty.read(), "menuscript":fscr.read(), "productname":PRODUCTNAME, "offlinemode":offlinestring,"cloudhostport":"%s:%s" % cloudhost["host"],cloudhost["port"])}
 	fscr.close()
 	fsty.close()
 	return {**session , **customstuff}
@@ -178,7 +182,7 @@ def doregisterSwitch():
 	return json.dumps({"status":status})
 
 
-#@app.route("/factory",methods=['POST','GET']) # i think this is overkill, im dropping this flaw`
+#@app.route("/factory",methods=['POST','GET']) # i think this is overkill, im dropping this flaw
 #def factorydefault(): #FIXME not finished
 #	status="failure"
 #	#factory reset

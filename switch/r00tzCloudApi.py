@@ -23,7 +23,6 @@ class r00tsIOTAPI():
 		self.house_id = house_id
 
 	def api_request(self, api, data):
-		print(self.house_id)
 		if (self.house_id != None) or  api in ["register","login"]:
 			ep = "%s/api/%s" % (self.api_host_url ,api)
 			try:

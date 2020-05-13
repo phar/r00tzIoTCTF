@@ -60,9 +60,8 @@ and update checks will never happen
 
 TODO: more logging
 TODO test normal workflow
-TODO firmware update unzip and execute
-TODO configuration for cloud hostname, cloud heartbeat frequency
-TODO add html template tag if the switch is running in off line mode
+TODO cloud heartbeat frequency
 TODO about page on the switch should be populated with something
 TODO factory restore needs testing/debugging
+TODO factory reset option in gui, actually check session to prevent trivial reset
 </pre>

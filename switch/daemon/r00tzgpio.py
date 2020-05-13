@@ -64,7 +64,6 @@ class r00tsIoTGPIOBase():
 
 def getBestGPIOHandler(type, switchpress=lambda: None,resetpress=lambda: None, logfunc=lambda x: lmbdaproxy(x)):
 	ioset = [r00tsIoTNull,r00tsIoTDMX,r00tsIoTRPiGPIO]
-	print(type)
 	if type == "switch":
 		try:
 			gapi  = r00tsIoTRPiGPIO(switchpress=switchpress,resetpress=resetpress,logfunc=logfunc)

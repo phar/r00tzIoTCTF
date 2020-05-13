@@ -167,10 +167,9 @@ def main_program():
 
 
 			if existsFile("r00tzRegistered"):
-				gapi = getBestGPIOHandler(getFile("r00tzSwitchType"))
-				rapi = r00tsIOTAPI(house_id=getFile("r00tzRegistered"),apicallupdate=lambda:gapi.led_blink("cloudapi"))
 				if (CHECK_SWITCH_LAST_TIME + CHECK_SWITCH_INTERVAL) < time.time():
-					print("cloud")
+					gapi = getBestGPIOHandler(getFile("r00tzSwitchType"))
+					rapi = r00tsIOTAPI(house_id=getFile("r00tzRegistered"),apicallupdate=lambda:gapi.led_blink("cloudapi"))
 					ret = rapi.apiGetStatus(getFile("r00tzSwitchID"))
 					if(ret["result"] == "success"):
 						status = json.loads(ret['status'][2])
@@ -224,8 +223,8 @@ if GPIO.input(INPUT_BUTTON_1_PIN) == BUTTON_PRESSED_STATE:
 		os.system('reboot')
 	
 	
-if len(sys.argv) == 1: #any argument will provide an interactive mode
+if len(sys.argv) != 1: #any argument will provide an interactive mode
 	with daemon.DaemonContext():
 		main_program()
- else:
- 	   main_program()
+else:
+	main_program()
