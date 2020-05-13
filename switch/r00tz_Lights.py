@@ -112,6 +112,7 @@ def dobackupdownload():
 	zf.writestr(os.path.join("configs","r00tzCloudAPIHostname"),json.dumps(getFile("r00tzCloudAPIHostname")))
 	zf.writestr(os.path.join("configs","r00tzSwitchColor"),json.dumps(getFile("r00tzSwitchColor")))
 	zf.writestr(os.path.join("configs","r00tzSwitchType"),json.dumps(getFile("r00tzSwitchType")))
+	zf.writestr(os.path.join("configs","r00tzUseTLSFlag"),json.dumps(getFile("r00tzUseTLSFlag")))
 	zf.close()
 	return Response(file_like_object.getvalue(),mimetype="application/zip",headers={"Content-disposition":"attachment; filename=backup.config"})
 

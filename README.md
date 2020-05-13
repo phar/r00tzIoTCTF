@@ -58,7 +58,6 @@ and update checks will never happen
 ----------------------------------
 #TODO create r00tzLights_1.0_fw.img file on the could server
 
-TODO: more logging
 TODO test normal workflow
 TODO cloud heartbeat frequency
 TODO about page on the switch should be populated with something

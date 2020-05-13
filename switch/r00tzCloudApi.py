@@ -8,15 +8,13 @@ import json
 from util import *
 
 
-USE_TLS = False
-
 class r00tsIOTAPI():
 	def __init__(self, house_id=None, apicallupdate=lambda: None):
 		host = getFile("r00tzCloudAPIHostname")
 		self.host = host["host"]
 		self.port = host["port"]
 		self.apicallupdate = apicallupdate
-		if USE_TLS:
+		if getFile("r00tzUseTLSFlag") == True:
 			self.api_host_url = "https://%s:%d" % (self.host, self.port)
 		else:
 			self.api_host_url = "http://%s:%d" % (self.host, self.port)
@@ -50,8 +48,8 @@ class r00tsIOTAPI():
 	def apiGetStatus(self, switch_id):
 		return self.api_request("getState", {"house_id":self.house_id,"switch_id":switch_id})
 
-	def apiCheckUpdate(self):
-		return self.api_request("update", {})
+	def apiCheckUpdate(self, switch_id):
+		return self.api_request("update", {"house_id":self.house_id,"switch_id":switch_id}))
 
 	def apiRegisterHouse(self,username, password, first, last, address, city, state, phone):
 		return self.api_request("register", {"username":username,"password":password, "first":first,"last":last,"address":address,"city":city,"state":state,"phone":phone})
