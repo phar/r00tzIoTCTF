@@ -198,10 +198,11 @@ def main_program():
 					f = open(localfile,"wb")
 					f.write(r.text)
 					f.close()
-
 					factoryfile = os.path.join(HOMEPATH,localfile)
+					os.system("tar -C flaskapp/ -cjvpf %s/configs_package.tbz configs" % HOMEPATH) #backup configs
 					os.system("rm -rf %s" % HOMEPATH)
 					os.system("tar -xjvpf %s --overwrite" % localfile)
+					os.system("tar -C flaskapp/ -xjvpf %s/configs_package.tbz" % HOMEPATH) #restore configs
 					os.system("sudo www-data /bin/bash update.sh")
 
 				except:

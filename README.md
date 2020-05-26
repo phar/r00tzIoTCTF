@@ -12,26 +12,31 @@ add the following line to /etc/rc.local
 /usr/bin/python3 /home/[switchuser]/flaskapp/daemon/switchDaemon_written.py& #note the amersand is new because daemon module flakes
 sed  "s/\/home\/pi/\/home\/$switchuser/g"   r00tzIoTCTF/rpiconfig/uwsgi.ini.switch   >  /home/$switchuser/flaskapp/uwsgi.ini
 
-switch nginx:
+#switch nginx:
 sudo rm /etc/nginx/sites-enabled/default
 sudo cp  r00tzIoTCTF/rpiconfig/flask_proxy  /etc/nginx/sites-enabled/
 sudo ln -s /etc/nginx/sites-available/flaskapp_proxy /etc/nginx/sites-enabled/flaskapp_proxy
 sed  "s/\/home\/pi/\/home\/$switchuser/g"  r00tzIoTCTF/rpiconfig/uwsgi.service  > /tmp/uwsgi.service
 sudo cp /tmp/uwsgi.service   /etc/systemd/system/uwsgi.service
 
-switch finish:
+#switch finish:
 sudo chown www-data.www-data /home/$switchuser/flaskapp -R
 tar -cjvpf factory_reset.tbz flaskapp
 rm -rf r00tzIoTCTF
 
 
-cloud
+#######
+#cloud
+#########
 git clone https://github.com/phar/r00tzIoTCTF
 create a cloud user
 
 export clouduser=r00tzIoT
+export switchuser=r00tzIoT
 mv r00tzIoTCTF/cloud /home/$clouduser/flaskapp
 sed  "s/\/home\/pi/\/home\/$clouduser/g"  r00tzIoTCTF/rpiconfig/uwsgi.ini.cloud   >  /home/$clouduser/flaskapp/uwsgi.ini
+
+#cloud nginx
 sudo rm /etc/nginx/sites-enabled/default
 sudo cp  r00tzIoTCTF/rpiconfig/flask_proxy nano /etc/nginx/sites-enabled/
 sudo ln -s /etc/nginx/sites-available/flaskapp_proxy /etc/nginx/sites-enabled/flaskapp_proxy
@@ -41,9 +46,10 @@ sudo cp /tmp/uwsgi.service   /etc/systemd/system/uwsgi.service
 cloud finish:
 sudo chown www-data.www-data /home/$clouduser/flaskapp -R
 #make firmware update package
+sed  "s/\/home\/pi/\/home\/$switchuser/g"   r00tzIoTCTF/rpiconfig/uwsgi.ini.switch   >  r00tzIoTCTF/flaskapp/uwsgi.ini
 mv r00tzIoTCTF/switch r00tzIoTCTF/flaskapp
 sudo chown www-data r00tzIoTCTF/flaskapp -R
-tar --exclude='r00tzIoTCTF/flaskapp/configs' --exclude='r00tzIoTCTF/flaskapp/logs' -cjvpf /home/$clouduser/flaskapp/upgrade_package.tbz r00tzIoTCTF/flaskapp 
+sudo tar -C r00tzIoTCTF/ --exclude='flaskapp/configs' --exclude='/flaskapp/logs' -cjvpf /home/$clouduser/flaskapp/upgrade_package.tbz flaskapp 
 sudo chown   www-data.www-data  /home/$clouduser/flaskapp/upgrade_package.tbz
 #cleanup
 rm -rf r00tzIoTCTF
@@ -56,11 +62,11 @@ and update checks will never happen
 
 
 ----------------------------------
-#TODO create r00tzLights_1.0_fw.img file on the could server
-
 TODO test normal workflow
 TODO cloud heartbeat frequency
 TODO about page on the switch should be populated with something
 TODO factory restore needs testing/debugging
 TODO factory reset option in gui, actually check session to prevent trivial reset
+
+
 </pre>

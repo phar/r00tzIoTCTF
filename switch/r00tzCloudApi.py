@@ -49,7 +49,7 @@ class r00tsIOTAPI():
 		return self.api_request("getState", {"house_id":self.house_id,"switch_id":switch_id})
 
 	def apiCheckUpdate(self, switch_id):
-		return self.api_request("update", {"house_id":self.house_id,"switch_id":switch_id}))
+		return self.api_request("update", {"house_id":self.house_id,"switch_id":switch_id})
 
 	def apiRegisterHouse(self,username, password, first, last, address, city, state, phone):
 		return self.api_request("register", {"username":username,"password":password, "first":first,"last":last,"address":address,"city":city,"state":state,"phone":phone})

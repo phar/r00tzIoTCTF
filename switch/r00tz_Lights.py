@@ -42,7 +42,7 @@ def context_proc():
 	if hid == None:
 		offlinestring = "***you are in offline mode, no attempt will be made to use the cloud API****"
 	cloudhost = getFile("r00tzCloudAPIHostname")
-	customstuff = {"house_id":hid,"switchid":swid,"switch_name":swn,"menustyle":fsty.read(), "menuscript":fscr.read(), "productname":PRODUCTNAME, "offlinemode":offlinestring,"cloudhostport":"%s:%s" % cloudhost["host"],cloudhost["port"])}
+	customstuff = {"house_id":hid,"switchid":swid,"switch_name":swn,"menustyle":fsty.read(), "menuscript":fscr.read(), "productname":PRODUCTNAME, "offlinemode":offlinestring,"cloudhostport":"%s:%s" % (cloudhost["host"],cloudhost["port"])}
 	fscr.close()
 	fsty.close()
 	return {**session , **customstuff}
