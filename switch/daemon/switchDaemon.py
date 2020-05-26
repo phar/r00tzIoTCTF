@@ -2,6 +2,7 @@
 import sys
 import os
 HOMEPATH = "/home/pi/flaskapp" #this line is rewritten by SED
+HOMEDIR = "/home/pi/" #this line is rewritten by SED
 os.chdir(HOMEPATH)
 sys.path.insert(0, HOMEPATH)
 from r00tzgpio import *
@@ -199,11 +200,11 @@ def main_program():
 					f.write(r.text)
 					f.close()
 					factoryfile = os.path.join(HOMEPATH,localfile)
-					os.system("tar -C flaskapp/ -cjvpf %s/configs_package.tbz configs" % HOMEPATH) #backup configs
+					os.system("tar -C flaskapp/ -cjvpf %s/configs_package.tbz configs" % HOMEDIR) #backup configs
 					os.system("rm -rf %s" % HOMEPATH)
 					os.system("tar -xjvpf %s --overwrite" % localfile)
-					os.system("tar -C flaskapp/ -xjvpf %s/configs_package.tbz" % HOMEPATH) #restore configs
-					os.system("sudo www-data /bin/bash update.sh")
+					os.system("tar -C flaskapp/ -xjvpf %s/configs_package.tbz" % HOMEDIR) #restore configs
+					os.system("sudo -u www-data /bin/bash flaskapp/update.sh")
 
 				except:
 					pass
