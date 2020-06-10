@@ -1,0 +1,3 @@
+[submodule "switch/daemon/dmx"]
+	path = switch/daemon/dmx
+	url = https://github.com/phar/dmx/

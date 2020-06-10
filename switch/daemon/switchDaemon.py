@@ -173,7 +173,7 @@ def main_program():
 					rapi = r00tsIOTAPI(house_id=getFile("r00tzRegistered"),apicallupdate=lambda:gapi.led_blink("cloudapi"))
 					ret = rapi.apiGetStatus(getFile("r00tzSwitchID"))
 					if(ret["result"] == "success"):
-						status = json.loads(ret['status'][2])
+						status = json.loads(ret['status'][2])`
 						if status["basicstate"] == "ON":
 							touchFile("r00tzSwitchOn")
 						else:
@@ -200,11 +200,11 @@ def main_program():
 					f.write(r.text)
 					f.close()
 					factoryfile = os.path.join(HOMEPATH,localfile)
-					os.system("tar -C flaskapp/ -cjvpf %s/configs_package.tbz configs" % HOMEDIR) #backup configs
+					os.system("tar -C %s -cjvpf %s/configs_package.tbz configs" % (HOMEPATH,HOMEDIR)) #backup configs
 					os.system("rm -rf %s" % HOMEPATH)
 					os.system("tar -xjvpf %s --overwrite" % localfile)
-					os.system("tar -C flaskapp/ -xjvpf %s/configs_package.tbz" % HOMEDIR) #restore configs
-					os.system("sudo -u www-data /bin/bash flaskapp/update.sh")
+					os.system("tar -C %s  -xjvpf %s/configs_package.tbz" % (HOMEPATH,HOMEDIR)) #restore configs
+					os.system("sudo -u www-data /bin/bash %s/update.sh" % HOMEPATH)
 
 				except:
 					pass
