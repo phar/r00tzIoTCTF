@@ -85,7 +85,7 @@
 		}
 		xhttp.open("POST", "/api/setState");
 		xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-		xhttp.send(JSON.stringify({"house_id":'{{ house_id }}',"switch_id":switch_id,"state":JSON.stringify({"basicstate":"ON","channelred":r.value,"channelgreen":g.value,"channelblue":b.value})}));
+		xhttp.send(JSON.stringify({"house_id":'{{ house_id }}',"switch_id":switch_id,"state":JSON.stringify({"basicstate":"ON","channeldimmer":255,"channelred":r.value,"channelgreen":g.value,"channelblue":b.value})}));
 		setColor(switch_id);
 	 }
 

@@ -15,7 +15,7 @@ import struct
 import json
 import socket
 import select
-
+import dmx.dmx as dmx
 
 
 server_address = '/tmp/r00tzGPIOShimSocket'
@@ -102,18 +102,25 @@ def toggle_relay():
 	global relaystate
 	gapi = getBestGPIOHandler(getFile("r00tzSwitchType"))
 	rapi = r00tsIOTAPI(house_id=getFile("r00tzRegistered"),apicallupdate=lambda:gapi.led_blink("cloudapi"))
-	if existsFile("r00tzSwitchOn"):
-		if relaystate == 0:
-			gapi.led_on("relay_led")
-			gapi.relay_on()
-			rapi.apiSetStatus(getFile("r00tzSwitchID"),"ON")
-			relaystate = 1
-	else:
-		if relaystate == 1:
-			gapi.led_off("relay_led")
-			gapi.relay_off()
-			rapi.apiSetStatus(getFile("r00tzSwitchID"),"OFF")
-			relaystate = 0
+	if getFile("r00tzSwitchType") == "switch":
+		if existsFile("r00tzSwitchOn"):
+			if relaystate == 0:
+				gapi.led_on("relay_led")
+				gapi.relay_on()
+				rapi.apiSetStatus(getFile("r00tzSwitchID"),"ON")
+				relaystate = 1
+		else:
+			if relaystate == 1:
+				gapi.led_off("relay_led")
+				gapi.relay_off()
+				rapi.apiSetStatus(getFile("r00tzSwitchID"),"OFF")
+				relaystate = 0
+	elif:
+		if existsFile("r00tzSwitchOn"): #fixme
+			cc = getFile("r00tzSwitchColor")
+			sender.set_data(bytes((cc["channeldimmer"],cc["channelred"],cc["channelgreen"],cc["channelblue"]) * 64))
+		else:
+			sender.set_data(bytes((0,0,0,0) * 64))
 
 
 def main_program():
@@ -123,6 +130,9 @@ def main_program():
 	CHECK_UPDATE_INTERVAL = (60 * 60) * 15 #fixme, put these in configs
 	CHECK_UPDATE_LAST_TIME = 0
 	
+	if getFile("r00tzSwitchType") == "dmxswitch":
+		dmxsender = DMX_Serial(getFile("r00tzDMXDeviceID"))
+		dmxsender.start()
 
 	while True:
 		fdVsEvent = poller.poll(250)

@@ -235,11 +235,15 @@ def dolights():
 					blue = content['channelblue']
 				else:
 					blue  = cc["channelblue"]
-				touchFile("r00tzSwitchColor",{"channelred":red,"channelgreen":green,"channelblue":blue})
+				if "channeldimmer" in content:
+					dimmer = content['channeldimmer']
+				else:
+					dimmer  = cc["channeldimmer"]
+				touchFile("r00tzSwitchColor",{"channeldimmer":dimmer,"channelred":red,"channelgreen":green,"channelblue":blue})
 			elif content['basicstate'] == "OFF":
 				cleanFile("r00tzSwitchOn")
 			ret = rapi.apiSetStatus(switch,content['basicstate'],red,green,blue)
-			return json.dumps({"type":type,"channelred":red,"channelgreen":green,"channelblue":blue})
+			return json.dumps({"type":type,"channeldimmer":dimmer,channelred":red,"channelgreen":green,"channelblue":blue})
 	else:
 		status="success"
 
@@ -253,7 +257,8 @@ def dolights():
 		red = c["channelred"]
 		green = c["channelgreen"]
 		blue = c["channelblue"]
-		return json.dumps({"type":type, "basicstate":state, "channelred":red,"channelgreen":green,"channelblue":blue})
+		dimmer = c["channeldimmer"]
+		return json.dumps({"type":type, "basicstate":state, "channeldimmer":dimmer,"channelred":red,"channelgreen":green,"channelblue":blue})
 
 	return json.dumps({"type":type, "basicstate":state})
 	

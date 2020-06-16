@@ -68,7 +68,7 @@
 			
          	xhttp.open("POST", "/api/lights");
          	xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-			xhttp.send(JSON.stringify({"basicstate":"ON","channelred":r.value,"channelgreen":g.value,"channelblue":b.value}));
+			xhttp.send(JSON.stringify({"basicstate":"ON","channeldimmer":255,"channelred":r.value,"channelgreen":g.value,"channelblue":b.value}));
 
          }
 
