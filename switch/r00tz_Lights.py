@@ -243,7 +243,7 @@ def dolights():
 			elif content['basicstate'] == "OFF":
 				cleanFile("r00tzSwitchOn")
 			ret = rapi.apiSetStatus(switch,content['basicstate'],red,green,blue)
-			return json.dumps({"type":type,"channeldimmer":dimmer,channelred":red,"channelgreen":green,"channelblue":blue})
+			return json.dumps({"type":type,"channeldimmer":dimmer,"channelred":red,"channelgreen":green,"channelblue":blue})
 	else:
 		status="success"
 

@@ -143,7 +143,7 @@ def doregisterswitch():
 				c.execute("select homes.house_id, count(status) from homes left join switch_status on homes.house_id=switch_status.house_id where  homes.house_id=? group by homes.house_id;",(content["house_id"],))
 				(house_id, count) = c.fetchone()
 				switch_id = "-".join(house_id.split("-")[:-1] + ["%012d" % (count,)])
-				c.execute("insert into switch_status (switch_id,switch_name,house_id,type,status) values (?,?,?,?,?)" , (switch_id,content["switch_name"], content["house_id"], content["type"], json.dumps({"basicstate":"OFF","channeldimmer":0"channelred":0,"channelgreen":0,"channelblue":0})))
+				c.execute("insert into switch_status (switch_id,switch_name,house_id,type,status) values (?,?,?,?,?)" , (switch_id,content["switch_name"], content["house_id"], content["type"], json.dumps({"basicstate":"OFF","channeldimmer":0,"channelred":0,"channelgreen":0,"channelblue":0})))
 				conn.commit()
 				status = {"result":"success", "switch_id":switch_id}
 				logevent(conn,content["house_id"], "house_id %s is now registered" % (switch_id))

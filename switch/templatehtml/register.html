@@ -12,6 +12,7 @@
 				  var state = JSON.parse(this.responseText);
 				  console.log(state);
 				  if(state["status"] == "success"){
+					  alert("Your cloud user accound has been registered, you can low login to the switch with the default admin/admin credentials");
 					  document.location = "/";
 				  }else{
 					  alert("something went wrong!!");

@@ -7,7 +7,7 @@ create a switch user
 git clone https://github.com/phar/r00tzIoTCTF
 export switchuser=r00tzIoT
 mv r00tzIoTCTF/switch /home/$switchuser/flaskapp
-sed  "s/\/home\/pi/\/home\/$switchuser/g"  /home/$switchuser/flaskapp/daemon/switchDaemon.py   >  /home/$switchuser/flaskapp/daemon/switchDaemon_written.py
+sed  "s/\/home\/pi/\/home\/$switchuser/g"  /home/$switchuser/flaskapp/daemon/switchDaemon.py   > /home/$switchuser/flaskapp/daemon/switchDaemon_written.py
 add the following line to /etc/rc.local
 /usr/bin/python3 /home/[switchuser]/flaskapp/daemon/switchDaemon_written.py& #note the amersand is new because daemon module flakes
 sed  "s/\/home\/pi/\/home\/$switchuser/g"   r00tzIoTCTF/rpiconfig/uwsgi.ini.switch   >  /home/$switchuser/flaskapp/uwsgi.ini
@@ -46,7 +46,7 @@ sudo cp /tmp/uwsgi.service   /etc/systemd/system/uwsgi.service
 cloud finish:
 sudo chown www-data.www-data /home/$clouduser/flaskapp -R
 #make firmware update package
-sed  "s/\/home\/pi/\/home\/$switchuser/g"   r00tzIoTCTF/rpiconfig/uwsgi.ini.switch   >  r00tzIoTCTF/flaskapp/uwsgi.ini
+sed  "s/\/home\/pi/\/home\/$switchuser/g"   r00tzIoTCTF/rpiconfig/uwsgi.ini.cloud   >  r00tzIoTCTF/flaskapp/uwsgi.ini
 mv r00tzIoTCTF/switch r00tzIoTCTF/flaskapp
 sudo chown www-data r00tzIoTCTF/flaskapp -R
 sudo tar -C r00tzIoTCTF/ --exclude='flaskapp/configs' --exclude='/flaskapp/logs' -cjvpf /home/$clouduser/flaskapp/upgrade_package.tbz flaskapp 
