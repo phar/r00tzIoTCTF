@@ -222,9 +222,9 @@ if __name__ == "__main__":
 			print("factory reset condition")
 			gapi.led_on("firmware")
 
-			factoryfile = os.path.join(HOMEPATH,"factory_reset.tbz")
+			factoryfile = os.path.join(HOMEDIR,"factory_reset.tbz")
 			os.system("rm -rf %s" % HOMEPATH)
-			os.system("tar -xjvpf %s --overwrite" % factoryfile)
+			os.system("tar -xjvpf %s -C %s --overwrite" % (factoryfile, HOMEPATH))
 
 			while(GPIO.input(INPUT_BUTTON_1_PIN) != BUTTON_PRESSED_STATE):
 				print("reboot required")
