@@ -221,19 +221,19 @@ def dosetstatus():
 			if "channelred" in state:
 				red = state['channelred']
 			else:
-				red = cc["channelred"]
+				red = int(cc["channelred"])
 			if "channelgreen" in state:
 				green = state['channelgreen']
 			else:
-				green = cc["channelgreen"]
+				green = int(cc["channelgreen"])
 			if "channelblue" in state:
 				blue = state['channelblue']
 			else:
-				blue  = cc["channelblue"]
+				blue  = int(cc["channelblue"])
 			if "channeldimmer" in state:
 				dimmer = state['channeldimmer']
 			else:
-				dimmer  = cc["channeldimmer"]
+				dimmer  = int(cc["channeldimmer"])
 					
 			state = {"basicstate":state["basicstate"],"channeldimmer":dimmer,"channelred":red,"channelgreen":green,"channelblue":blue}
 			c.execute("update switch_status set status=? where house_id=? and switch_id=?" , (json.dumps(state),  content["house_id"],content["switch_id"]))

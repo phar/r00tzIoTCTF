@@ -1,7 +1,8 @@
 import random
 import RPi.GPIO as GPIO
 import time
-#B+ or zero
+import dmx.dmx as dmx
+from util import *
 
 STATUS_LED_0_PIN  = 6
 STATUS_LED_1_PIN  = 13
@@ -137,7 +138,41 @@ class r00tsIoTDMX(r00tsIoTGPIOBase):
 	def __init__(self, switchpress=lambda: None,resetpress=lambda: None, logfunc=lambda x: lmbdaproxy(x)):
 		super().__init__(switchpress,resetpress,logfunc)
 		self.name = "dmx_gpio_driver"
+		self.dmxsender = dmx.DMX_Serial(getFile("r00tzDMXDeviceID"))
+		self.dmxsender.start()
+		GPIO.setmode(GPIO.BCM)
+		GPIO.setwarnings(False)
+	
+		for n,l in self.leds.items():
+			GPIO.setup(l, GPIO.OUT)
+			
+		GPIO.setup(IOT_SWITCH_PIN, GPIO.OUT)
+			
+	def led_on(self,led):
+		GPIO.output(self.leds[led], self.LED_ON_STATE)
+		super().led_on(led)
+		
+	def led_off(self,led):
+		GPIO.output(self.leds[led], self.LED_OFF_STATE)
+		super().led_off(led)
+			
+	def relay_on(self):
+		GPIO.output(IOT_SWITCH_PIN, self.RELAY_ON_STATE)
+		cc = getFile("r00tzSwitchColor")
+		self.dmxsender.set_data(bytes((cc["channeldimmer"],cc["channelred"],cc["channelgreen"],cc["channelblue"]) * 64))
+		super().relay_on()
 
+	def relay_off(self):
+		GPIO.output(IOT_SWITCH_PIN, self.RELAY_OFF_STATE)
+		self.dmxsender.set_data(bytes((0,0,0,0) * 64))
+		super().relay_on()
+
+	def led_blink (self,led, duration=.05):
+		GPIO.output(self.leds[led], self.LED_ON_STATE)
+		time.sleep(duration)
+		GPIO.output(self.leds[led], self.LED_OFF_STATE)
+		time.sleep(duration)
+		super().led_blink(led,duration)
 
 
 

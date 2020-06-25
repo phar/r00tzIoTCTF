@@ -224,19 +224,19 @@ def dolights():
 				touchFile("r00tzSwitchOn")
 				cc = getFile("r00tzSwitchColor")
 				if "channelred" in content:
-					red = content['channelred']
+					red = int(content['channelred'])
 				else:
 					red = cc["channelred"]
 				if "channelgreen" in content:
-					green = content['channelgreen']
+					green = int(content['channelgreen'])
 				else:
 					green= cc["channelgreen"]
 				if "channelblue" in content:
-					blue = content['channelblue']
+					blue = int(content['channelblue'])
 				else:
 					blue  = cc["channelblue"]
 				if "channeldimmer" in content:
-					dimmer = content['channeldimmer']
+					dimmer = int(content['channeldimmer'])
 				else:
 					dimmer  = cc["channeldimmer"]
 				touchFile("r00tzSwitchColor",{"channeldimmer":dimmer,"channelred":red,"channelgreen":green,"channelblue":blue})

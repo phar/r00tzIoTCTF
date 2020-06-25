@@ -3,6 +3,7 @@ sudo apt install nginx
 sudo apt-get install python3-pip
 sudo pip3 install flask uwsgi
 sudo pip3 install pathlib
+sudo pip3 install queue
 sudo apt install zerofree
 sudo apt-get install uwsgi-plugin-python3
 sudo apt install python3-rpi.gpio

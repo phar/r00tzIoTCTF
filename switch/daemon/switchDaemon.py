@@ -6,7 +6,7 @@ HOMEDIR = "/home/pi/" #this line is rewritten by SED
 os.chdir(HOMEPATH)
 sys.path.insert(0, HOMEPATH)
 from r00tzgpio import *
-from r00tsCloudApi import *
+from r00tzCloudApi import *
 from util import *
 import time
 from util import *
@@ -15,7 +15,7 @@ import struct
 import json
 import socket
 import select
-import dmx.dmx as dmx
+#import dmx.dmx as dmx
 
 
 server_address = '/tmp/r00tzGPIOShimSocket'
@@ -60,9 +60,6 @@ def handle_command(gapi, command, args):
 	return (True,input, logs)
 
 
-gapi = getBestGPIOHandler(getFile("r00tzSwitchType"))
-gapi.all_leds_state(False)
-
 try:
     os.unlink(server_address)
 except OSError:
@@ -97,42 +94,30 @@ else:
 	GPIO.add_event_detect(INPUT_BUTTON_1_PIN, GPIO.RISING, callback = resetpress, bouncetime = 500)
 
 relaystate = 0
+colorstate = getFile("r00tzSwitchColor")
 
-def toggle_relay():
+def toggle_relay(gapi):
 	global relaystate
-	gapi = getBestGPIOHandler(getFile("r00tzSwitchType"))
 	rapi = r00tsIOTAPI(house_id=getFile("r00tzRegistered"),apicallupdate=lambda:gapi.led_blink("cloudapi"))
-	if getFile("r00tzSwitchType") == "switch":
-		if existsFile("r00tzSwitchOn"):
-			if relaystate == 0:
-				gapi.led_on("relay_led")
-				gapi.relay_on()
-				rapi.apiSetStatus(getFile("r00tzSwitchID"),"ON")
-				relaystate = 1
-		else:
-			if relaystate == 1:
-				gapi.led_off("relay_led")
-				gapi.relay_off()
-				rapi.apiSetStatus(getFile("r00tzSwitchID"),"OFF")
-				relaystate = 0
-	elif:
-		if existsFile("r00tzSwitchOn"): #fixme
-			cc = getFile("r00tzSwitchColor")
-			sender.set_data(bytes((cc["channeldimmer"],cc["channelred"],cc["channelgreen"],cc["channelblue"]) * 64))
-		else:
-			sender.set_data(bytes((0,0,0,0) * 64))
+	if existsFile("r00tzSwitchOn"):
+		if relaystate == 0:
+			gapi.led_on("relay_led")
+			gapi.relay_on()
+			rapi.apiSetStatus(getFile("r00tzSwitchID"),"ON")
+			relaystate = 1
+	else:
+		if relaystate == 1:
+			gapi.led_off("relay_led")
+			gapi.relay_off()
+			rapi.apiSetStatus(getFile("r00tzSwitchID"),"OFF")
+			relaystate = 0
 
-
-def main_program():
+def main_program(gapi):
 	global relaystate
 	CHECK_SWITCH_INTERVAL = 20
 	CHECK_SWITCH_LAST_TIME = 0
 	CHECK_UPDATE_INTERVAL = (60 * 60) * 15 #fixme, put these in configs
 	CHECK_UPDATE_LAST_TIME = 0
-	
-	if getFile("r00tzSwitchType") == "dmxswitch":
-		dmxsender = DMX_Serial(getFile("r00tzDMXDeviceID"))
-		dmxsender.start()
 
 	while True:
 		fdVsEvent = poller.poll(250)
@@ -159,31 +144,27 @@ def main_program():
 
 
 			if existsFile("r00tzSwitchOn"):
-				if relaystate == 0:
-					gapi = getBestGPIOHandler(getFile("r00tzSwitchType"))
+				if relaystate == 0 or (colorstate != getFile("r00tzSwitchColor")):
 					rapi = r00tsIOTAPI(house_id=getFile("r00tzRegistered"),apicallupdate=lambda:gapi.led_blink("cloudapi"))
 					gapi.led_on("relay_led")
 					gapi.relay_on()
 					rapi.apiSetStatus(getFile("r00tzSwitchID"),"ON")
 					relaystate = 1
+					colorstate = getFile("r00tzSwitchColor")
 			else:
 				if relaystate == 1:
-					gapi = getBestGPIOHandler(getFile("r00tzSwitchType"))
 					rapi = r00tsIOTAPI(house_id=getFile("r00tzRegistered"),apicallupdate=lambda:gapi.led_blink("cloudapi"))
 					gapi.led_off("relay_led")
 					gapi.relay_off()
 					rapi.apiSetStatus(getFile("r00tzSwitchID"),"OFF")
 					relaystate = 0
 
-
-
 			if existsFile("r00tzRegistered"):
 				if (CHECK_SWITCH_LAST_TIME + CHECK_SWITCH_INTERVAL) < time.time():
-					gapi = getBestGPIOHandler(getFile("r00tzSwitchType"))
 					rapi = r00tsIOTAPI(house_id=getFile("r00tzRegistered"),apicallupdate=lambda:gapi.led_blink("cloudapi"))
 					ret = rapi.apiGetStatus(getFile("r00tzSwitchID"))
 					if(ret["result"] == "success"):
-						status = json.loads(ret['status'][2])`
+						status = json.loads(ret['status'][2])
 						if status["basicstate"] == "ON":
 							touchFile("r00tzSwitchOn")
 						else:
@@ -192,7 +173,6 @@ def main_program():
 					CHECK_SWITCH_LAST_TIME = time.time()
 
 			if (CHECK_UPDATE_LAST_TIME + CHECK_UPDATE_INTERVAL) < time.time():
-				gapi = getBestGPIOHandler(getFile("r00tzSwitchType"))
 				rapi = r00tsIOTAPI(house_id=getFile("r00tzRegistered"),apicallupdate=lambda:gapi.led_blink("cloudapi"))
 				try:
 					ret = rapi.apiCheckUpdate()
@@ -222,39 +202,43 @@ def main_program():
 				CHECK_UPDATE_LAST_TIME = time.time()
 
 
-print("checking for factory reset")
-if GPIO.input(INPUT_BUTTON_1_PIN) == BUTTON_PRESSED_STATE:
+if __name__ == "__main__":
 	gapi = getBestGPIOHandler(getFile("r00tzSwitchType"))
-	print("set is held")
-	aborted = 0
-	for i in range(10,0,-1):
-		gapi.led_blink("firmware")
-		if GPIO.input(INPUT_BUTTON_1_PIN) != BUTTON_PRESSED_STATE:
-			print("reset aborted")
-			aborted = 1
-			break
-		print(i)
-		time.sleep(1)
-	if aborted == 0:
-		print("factory reset condition")
-		gapi.led_on("firmware")
+	gapi.all_leds_state(False)
 
-		factoryfile = os.path.join(HOMEPATH,"factory_reset.tbz")
-		os.system("rm -rf %s" % HOMEPATH)
-		os.system("tar -xjvpf %s --overwrite" % factoryfile)
-
-		while(GPIO.input(INPUT_BUTTON_1_PIN) != BUTTON_PRESSED_STATE):
-			print("reboot required")
+	print("checking for factory reset")
+	if GPIO.input(INPUT_BUTTON_1_PIN) == BUTTON_PRESSED_STATE:
+		print("set is held")
+		aborted = 0
+		for i in range(10,0,-1):
+			gapi.led_blink("firmware")
+			if GPIO.input(INPUT_BUTTON_1_PIN) != BUTTON_PRESSED_STATE:
+				print("reset aborted")
+				aborted = 1
+				break
+			print(i)
+			time.sleep(1)
+		if aborted == 0:
+			print("factory reset condition")
 			gapi.led_on("firmware")
-			time.sleep(1)
-			gapi.led_off("firmware")
-			time.sleep(1)
-		#reboot
-		os.system('reboot')
-	
-	
-#if len(sys.argv) != 1: #any argument will provide an interactive mode
-#	with daemon.DaemonContext():
-#		main_program()
-#else:
-main_program()
+
+			factoryfile = os.path.join(HOMEPATH,"factory_reset.tbz")
+			os.system("rm -rf %s" % HOMEPATH)
+			os.system("tar -xjvpf %s --overwrite" % factoryfile)
+
+			while(GPIO.input(INPUT_BUTTON_1_PIN) != BUTTON_PRESSED_STATE):
+				print("reboot required")
+				gapi.led_on("firmware")
+				time.sleep(1)
+				gapi.led_off("firmware")
+				time.sleep(1)
+			#reboot
+			os.system('reboot')
+		
+		
+	#if len(sys.argv) != 1: #any argument will provide an interactive mode
+	#	with daemon.DaemonContext():
+	#		main_program()
+	#else:
+
+	main_program(gapi)

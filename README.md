@@ -4,7 +4,7 @@
 installation on image, i expect this to be run as root
 switch base:
 create a switch user
-git clone https://github.com/phar/r00tzIoTCTF
+git clone https://github.com/phar/r00tzIoTCTF --recursive
 export switchuser=r00tzIoT
 mv r00tzIoTCTF/switch /home/$switchuser/flaskapp
 sed  "s/\/home\/pi/\/home\/$switchuser/g"  /home/$switchuser/flaskapp/daemon/switchDaemon.py   > /home/$switchuser/flaskapp/daemon/switchDaemon_written.py
@@ -28,7 +28,7 @@ rm -rf r00tzIoTCTF
 #######
 #cloud
 #########
-git clone https://github.com/phar/r00tzIoTCTF
+git clone https://github.com/phar/r00tzIoTCTF --recursive
 create a cloud user
 
 export clouduser=r00tzIoT
