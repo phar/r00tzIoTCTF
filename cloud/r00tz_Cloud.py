@@ -159,15 +159,15 @@ def doregisterswitch():
 		logevent(conn,None, "non-json data from ip address XXXX making registerswitch api query")
 	return json.dumps(status)
 
-@app.route("/api/update", methods=['GET'])
+@app.route("/api/update", methods=['GET','POST'])
 def doupdate():
 	conn = getdbconn()
 	status = {"result":"fail"}
 	if request.is_json:
 		try:
-			status = {"result":"success","version":"1.01", "file":"/r00tzLights.fwupdate"}
+			logevent(conn,house_id, "house_id %s checking for update" % (content["house_id"])) #just forces the error to happen first
+			status = {"result":"success","version":"1.0.1", "file":"/r00tzLights.fwupdate"}
 			content = request.get_json()
-			logevent(conn,house_id, "house_id %s checking for update" % (content["house_id"]))
 		except:
 			status["reason"] = "house_id is not provided"
 			logevent(conn, None, "invalid update query")

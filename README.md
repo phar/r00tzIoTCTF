@@ -46,7 +46,6 @@ sudo cp /tmp/uwsgi.service   /etc/systemd/system/uwsgi.service
 cloud finish:
 sudo chown www-data.www-data /home/$clouduser/flaskapp -R
 #make firmware update package
-sed  "s/\/home\/pi/\/home\/$switchuser/g"   r00tzIoTCTF/rpiconfig/uwsgi.ini.cloud   >  r00tzIoTCTF/flaskapp/uwsgi.ini
 mv r00tzIoTCTF/switch r00tzIoTCTF/flaskapp
 sudo chown www-data r00tzIoTCTF/flaskapp -R
 sudo tar -C r00tzIoTCTF/ --exclude='flaskapp/configs' --exclude='/flaskapp/logs' -cjvpf /home/$clouduser/flaskapp/upgrade_package.tbz flaskapp 

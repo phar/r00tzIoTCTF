@@ -19,6 +19,7 @@ import select
 
 
 server_address = '/tmp/r00tzGPIOShimSocket'
+firmware_localfile = "/tmp/r00tzLights.fwupdate"
 
 def resetbtn_event(arv):
 	pass
@@ -29,7 +30,6 @@ def switchbtn_event(arg):
 		
 	else:
 		touchFile("r00tzSwitchOn")
-	toggle_relay()
 
 def handle_command(gapi, command, args):
 	logs = []
@@ -96,21 +96,6 @@ else:
 relaystate = 0
 colorstate = getFile("r00tzSwitchColor")
 
-def toggle_relay(gapi):
-	global relaystate
-	rapi = r00tsIOTAPI(house_id=getFile("r00tzRegistered"),apicallupdate=lambda:gapi.led_blink("cloudapi"))
-	if existsFile("r00tzSwitchOn"):
-		if relaystate == 0:
-			gapi.led_on("relay_led")
-			gapi.relay_on()
-			rapi.apiSetStatus(getFile("r00tzSwitchID"),"ON")
-			relaystate = 1
-	else:
-		if relaystate == 1:
-			gapi.led_off("relay_led")
-			gapi.relay_off()
-			rapi.apiSetStatus(getFile("r00tzSwitchID"),"OFF")
-			relaystate = 0
 
 def main_program(gapi):
 	global relaystate
@@ -175,26 +160,29 @@ def main_program(gapi):
 			if (CHECK_UPDATE_LAST_TIME + CHECK_UPDATE_INTERVAL) < time.time():
 				rapi = r00tsIOTAPI(house_id=getFile("r00tzRegistered"),apicallupdate=lambda:gapi.led_blink("cloudapi"))
 				try:
-					ret = rapi.apiCheckUpdate()
-					#fixme do update
-					
-					#download the file
-					if getFile("r00tzUseTLSFlag") == True:
-						self.api_host_url = "https://%s:%d" % (self.host, self.port)
-					else:
-						self.api_host_url = "http://%s:%d" % (self.host, self.port)
-					ep = "%s/r00tzLights.fwupdate" % (self.api_host_url)
-					localfile = "/tmp/r00tzLights.fwupdate"
-					r = requests.get(url = ep, verify=False)
-					f = open(localfile,"wb")
-					f.write(r.text)
-					f.close()
-					factoryfile = os.path.join(HOMEPATH,localfile)
-					os.system("tar -C %s -cjvpf %s/configs_package.tbz configs" % (HOMEPATH,HOMEDIR)) #backup configs
-					os.system("rm -rf %s" % HOMEPATH)
-					os.system("tar -xjvpf %s --overwrite" % localfile)
-					os.system("tar -C %s  -xjvpf %s/configs_package.tbz" % (HOMEPATH,HOMEDIR)) #restore configs
-					os.system("sudo -u www-data /bin/bash %s/update.sh" % HOMEPATH)
+					ret = rapi.apiCheckUpdate(getFile("r00tzSwitchID"))
+					ver = getFile("r00tzVersion")
+					if int(ret["version"].split(".")[-1]) > int(ver.split(".")[-1]):
+						print("there is an update because their number is bigger")
+						#download the file
+						if getFile("r00tzUseTLSFlag") == True:
+							api_host_url = "https://%s:%d" % (rapi.host, rapi.port)
+						else:
+							api_host_url = "http://%s:%d" % (rapi.host, rapi.port)
+							
+						ep = "%s/r00tzLights.fwupdate" % (api_host_url)
+						r = requests.get(url = ep, verify=False)
+						f = open(firmware_localfile,"wb")
+						f.write(r.content)
+						f.close()
+						factoryfile = os.path.join(HOMEPATH,firmware_localfile)
+						os.system("tar -C %s -cjvpf %s/configs_package.tbz configs" % (HOMEPATH,HOMEDIR)) #backup configs
+						os.system("rm -rf %s" % HOMEPATH)
+						os.system("mkdir %s" % HOMEPATH)
+						os.system("tar -xjvpf %s -C %s --overwrite" % (firmware_localfile, HOMEDIR))
+						os.system("tar -C %s  -xjvpf %s/configs_package.tbz" % (HOMEPATH,HOMEDIR)) #restore configs
+						os.system("sudo -u www-data /bin/bash %s/update.sh" % HOMEPATH) #run the update executable (as www-data ;) )
+						os.system('reboot')
 
 				except:
 					pass
@@ -205,6 +193,7 @@ def main_program(gapi):
 if __name__ == "__main__":
 	gapi = getBestGPIOHandler(getFile("r00tzSwitchType"))
 	gapi.all_leds_state(False)
+	os.chdir(HOMEPATH)
 
 	print("checking for factory reset")
 	if GPIO.input(INPUT_BUTTON_1_PIN) == BUTTON_PRESSED_STATE:
@@ -224,7 +213,7 @@ if __name__ == "__main__":
 
 			factoryfile = os.path.join(HOMEDIR,"factory_reset.tbz")
 			os.system("rm -rf %s" % HOMEPATH)
-			os.system("tar -xjvpf %s -C %s --overwrite" % (factoryfile, HOMEPATH))
+			os.system("tar -xjvpf %s -C %s --overwrite" % (factoryfile, HOMEDIR))
 
 			while(GPIO.input(INPUT_BUTTON_1_PIN) != BUTTON_PRESSED_STATE):
 				print("reboot required")
